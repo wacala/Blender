@@ -1,0 +1,39 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="vs.Pancho" />
+          <option value="vs.Palto" />
+          <option value="vs.PnumElem" />
+          <option value="vs.PanchoHueco" />
+          <option value="vs.PaltoHueco" />
+          <option value="vs.Pmarca" />
+          <option value="vs.Pmodelo" />
+          <option value="vs.PhuecoX" />
+          <option value="vs.PhuecoZ" />
+          <option value="vs.PhuecoY" />
+          <option value="object.marca" />
+          <option value="object.modelo" />
+          <option value="vs.PespHueco" />
+          <option value="vs.Poly3D" />
+          <option value="vs.Petiqueta" />
+          <option value="vs.PmostrarEtiqueta" />
+          <option value="vs.PControlPoint01X" />
+          <option value="vs.PControlPoint01Y" />
+          <option value="vs.Pn_modulos" />
+          <option value="vs.Petiq_boton" />
+          <option value="object.etiq_boton" />
+          <option value="importlib.import_module" />
+          <option value="vs.Pclass" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="SpellCheckingInspection" enabled="true" level="TYPO" enabled_by_default="true">
+      <option name="processCode" value="false" />
+      <option name="processLiterals" value="false" />
+      <option name="processComments" value="true" />
+    </inspection_tool>
+  </profile>
+</component>
