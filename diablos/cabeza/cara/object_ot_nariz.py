@@ -31,11 +31,12 @@ bl_info = {
 
 class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
     bl_idname = "object.nariz"
-    bl_label = "Nariz paramétrica para ¡Diablos!"
 
+    bl_label = "Nariz paramétrica para ¡Diablos!"
     x_fosa_derecha: bpy.props.FloatProperty(
         name="X",
         description="Coordenada en x de la fosa derecha",
+        default=0.04,
     )
 
     y_fosa_derecha: bpy.props.FloatProperty(
@@ -51,6 +52,7 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
     x_fosa_izquierda: bpy.props.FloatProperty(
         name="X",
         description="Coordenada en x de la fosa izquierda",
+        default=-0.04,
     )
 
     y_fosa_izquierda: bpy.props.FloatProperty(
@@ -114,6 +116,10 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         precision=3,
     )
 
+    @classmethod
+    def poll(cls, context):
+        return bpy.context.area.type == 'VIEW_3D'
+
     def execute(self, context):
         # Dos esferas para las fosas nasales
         bpy.ops.mesh.primitive_uv_sphere_add(radius=0.1)
@@ -128,6 +134,8 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         return {'FINISHED'}
 
     def draw(self, context):
+        # self.tabique()
+        # self.fosas()
         layout = self.layout
         layout.label(text="")
         col = layout.column()
@@ -150,6 +158,37 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
 
     def invoke(self, context, event):
         return self.execute(context)
+
+    def tabique(self):
+        # Requiere de tres curvas
+        # Raíz
+        bpy.ops.curve.primitive_bezier_curve_add()
+        # Suprapunta
+        bpy.ops.curve.primitive_bezier_curve_add()
+        # Surco
+        bpy.ops.curve.primitive_bezier_curve_add()
+        print(f"Tabique {self}")
+
+    def fosas(self):
+        layout = self.layout
+        layout.label(text="")
+        col = layout.column()
+        col.label(text="Fosa derecha")
+        col.prop(self, "ancho_fosa_derecha")
+        col.prop(self, "largo_fosa_derecha")
+        col.prop(self, "alto_fosa_derecha")
+        col.prop(self, "x_fosa_derecha")
+        col.prop(self, "y_fosa_derecha")
+        col.prop(self, "z_fosa_derecha")
+        col.label(text="Fosa izquierda")
+        col.prop(self, "ancho_fosa_izquierda")
+        col.prop(self, "largo_fosa_izquierda")
+        col.prop(self, "alto_fosa_izquierda")
+        col.prop(self, "x_fosa_izquierda")
+        col.prop(self, "y_fosa_izquierda")
+        col.prop(self, "z_fosa_izquierda")
+        col.label(text="Fosas")
+        col.prop(self, "distancia_entre_fosas")
 
 
 def register():

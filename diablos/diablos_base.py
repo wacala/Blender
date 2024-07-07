@@ -69,6 +69,7 @@ class DiablosBase(abc.ABC, bpy.types.Operator, metaclass=MiMetaClass):
         return v1 + v2
 
     @classmethod
+    @abc.abstractmethod
     def poll(cls, context):
         print(f"Context: {context.object}")
         return context.object is not None
