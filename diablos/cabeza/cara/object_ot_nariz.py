@@ -3,6 +3,7 @@ import os
 import time
 import importlib
 import bpy
+import numpy
 
 ruta_1: str = "/Users/walter/Programación/Blender/diablos"
 ruta_1_dir: str = os.path.dirname(ruta_1)
