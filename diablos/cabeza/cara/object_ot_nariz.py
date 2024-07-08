@@ -39,7 +39,8 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         name="X",
         description="Coordenada en x de la fosa derecha",
         default=0.04,
-        min=0.01,
+        min=0.005,
+        max=0.05,
     )
 
     y_fosa_derecha: bpy.props.FloatProperty(
@@ -56,7 +57,8 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         name="X",
         description="Coordenada en x de la fosa izquierda",
         default=-0.04,
-        min=-0.01,
+        min=-0.025,
+        max=-0.005,
     )
 
     y_fosa_izquierda: bpy.props.FloatProperty(
@@ -115,6 +117,7 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         name="Dist. ÷ fosas",
         description="Distancia entre fosas",
         min=0.001,
+        max=0.02,
         default=0.008,
         step=1,
         precision=3,
@@ -129,46 +132,24 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         return bpy.context.area.type == 'VIEW_3D'
 
     def execute(self, context):
-        # Dos esferas para las fosas nasales
         bpy.ops.mesh.primitive_uv_sphere_add(radius=0.1)
         self.fosa_derecha = context.object
         self.fosa_derecha.scale = (self.ancho_fosa_derecha, self.largo_fosa_derecha, self.alto_fosa_derecha)
-        self.fosa_derecha.location = (self.x_fosa_derecha, self.y_fosa_derecha, self.z_fosa_derecha)
+        self.fosa_derecha.location = (self.distancia_entre_fosas/2, self.y_fosa_derecha, self.z_fosa_derecha)
         bpy.ops.mesh.primitive_uv_sphere_add(radius=0.1)
         self.fosa_izquierda = context.object
         self.fosa_izquierda.scale = (self.ancho_fosa_izquierda, self.largo_fosa_izquierda, self.alto_fosa_izquierda)
-        self.fosa_izquierda.location = (self.x_fosa_izquierda, self.y_fosa_izquierda, self.z_fosa_izquierda)
-        distancia_fosas = self.distancia_entre_fosas = blw.utils.Utils.calcula_distancia_con_numpy(
+        self.fosa_izquierda.location = (-self.distancia_entre_fosas/2, self.y_fosa_izquierda, self.z_fosa_izquierda)
+        self.distancia_entre_fosas = blw.utils.Utils.calcula_distancia_con_numpy(
             self.fosa_izquierda.location,
             self.fosa_derecha.location
         )
-        print(f"Distancia entre fosas: {distancia_fosas}")
         bpy.context.view_layer.update()
-        # print(f"Distancia: {self.distancia_entre_fosas}")
         return {'FINISHED'}
 
     def draw(self, context):
         # self.tabique()
-        # self.fosas()
-        layout = self.layout
-        layout.label(text="")
-        col = layout.column()
-        col.label(text="Fosa derecha")
-        col.prop(self, "ancho_fosa_derecha")
-        col.prop(self, "largo_fosa_derecha")
-        col.prop(self, "alto_fosa_derecha")
-        col.prop(self, "x_fosa_derecha")
-        col.prop(self, "y_fosa_derecha")
-        col.prop(self, "z_fosa_derecha")
-        col.label(text="Fosa izquierda")
-        col.prop(self, "ancho_fosa_izquierda")
-        col.prop(self, "largo_fosa_izquierda")
-        col.prop(self, "alto_fosa_izquierda")
-        col.prop(self, "x_fosa_izquierda")
-        col.prop(self, "y_fosa_izquierda")
-        col.prop(self, "z_fosa_izquierda")
-        col.label(text="Fosas")
-        col.prop(self, "distancia_entre_fosas")
+        self.fosas()
 
     def invoke(self, context, event):
         # self.distancia_entre_fosas = blw.utils.Utils.distancia_entre_objetos(
@@ -199,14 +180,12 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         col.prop(self, "ancho_fosa_derecha")
         col.prop(self, "largo_fosa_derecha")
         col.prop(self, "alto_fosa_derecha")
-        col.prop(self, "x_fosa_derecha")
         col.prop(self, "y_fosa_derecha")
         col.prop(self, "z_fosa_derecha")
         col.label(text="Fosa izquierda")
         col.prop(self, "ancho_fosa_izquierda")
         col.prop(self, "largo_fosa_izquierda")
         col.prop(self, "alto_fosa_izquierda")
-        col.prop(self, "x_fosa_izquierda")
         col.prop(self, "y_fosa_izquierda")
         col.prop(self, "z_fosa_izquierda")
         col.label(text="Fosas")
