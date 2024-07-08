@@ -158,25 +158,23 @@ class Utils:
         pass
 
     @staticmethod
-    def calcula_distancia_con_mathutils(pos1: mathutils.Vector,
-                                        pos2: mathutils.Vector) -> float:
+    def calcula_distancia_con_mathutils(pos1: Optional[list[float] | tuple],
+                                        pos2: Optional[list[float] | tuple]) -> float:
         """
         Calcula la distancia con mathutils entre dos listas
         que representan coordenadas x, y, z. Más rápido
         para pocos cálculos.
 
         Args:
-            pos1: Lista de corrdenadas 1.
-            pos2: Lista de corrdenadas 2.
+            pos1: Lista de coordenadas 1.
+            pos2: Lista de coordenadas 2.
 
         Returns:
             La distancia.
         """
         if pos1 and pos2:
-            # array_pos1 = mathutils.Vector(pos1)
-            # array_pos2 = mathutils.Vector(pos2)
-            array_pos1 = pos1
-            array_pos2 = pos2
+            array_pos1 = mathutils.Vector(pos1)
+            array_pos2 = mathutils.Vector(pos2)
             dif = array_pos1 - array_pos2
             distance = dif.length
             return distance
@@ -184,15 +182,16 @@ class Utils:
             raise blw.excepciones.ExcepcionValorNulo()
 
     @staticmethod
-    def calcula_distancia_con_numpy(pos1: list[float], pos2: list[float]) -> float:
+    def calcula_distancia_con_numpy(pos1: Optional[list[float] | tuple],
+                                    pos2: Optional[list[float] | tuple]) -> float:
         """
         Calcula la distancia con numpy entre dos listas
         que representan coordenadas x, y, z. Más rápido
         para volumen alto de cálculos.
 
         Args:
-            pos1: Lista de corrdenadas 1.
-            pos2: Lista de corrdenadas 2.
+            pos1: Lista de coordenadas 1.
+            pos2: Lista de coordenadas 2.
 
         Returns:
             La distancia.

@@ -136,11 +136,12 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         self.fosa_izquierda = context.object
         self.fosa_izquierda.scale = (self.ancho_fosa_izquierda, self.largo_fosa_izquierda, self.alto_fosa_izquierda)
         self.fosa_izquierda.location = (self.x_fosa_izquierda, self.y_fosa_izquierda, self.z_fosa_izquierda)
+        distancia_fosas = self.distancia_entre_fosas = blw.utils.Utils.calcula_distancia_con_numpy(
+            self.fosa_izquierda.location,
+            self.fosa_derecha.location
+        )
+        print(f"Distancia entre fosas: {distancia_fosas}")
         bpy.context.view_layer.update()
-        print(f"Posición de la fosa derecha {self.fosa_derecha.location}")
-        # self.distancia_entre_fosas = blw.utils.Utils.calcula_distancia_con_mathutils(
-        #     self.fosa_izquierda, self.fosa_derecha
-        # )
         # print(f"Distancia: {self.distancia_entre_fosas}")
         return {'FINISHED'}
 
