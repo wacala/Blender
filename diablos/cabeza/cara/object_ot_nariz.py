@@ -137,12 +137,11 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         self.fosa_izquierda.scale = (self.ancho_fosa_izquierda, self.largo_fosa_izquierda, self.alto_fosa_izquierda)
         self.fosa_izquierda.location = (self.x_fosa_izquierda, self.y_fosa_izquierda, self.z_fosa_izquierda)
         bpy.context.view_layer.update()
-        self.distancia_entre_fosas = blw.utils.Utils.distancia_entre_objetos(
-            self.fosa_izquierda, self.fosa_derecha
-        )
-        self.distancia_entre_fosas = blw.utils.Utils.distancia_entre_objetos_2(
-            self.fosa_izquierda, self.fosa_derecha
-        )
+        print(f"Posición de la fosa derecha {self.fosa_derecha.location}")
+        # self.distancia_entre_fosas = blw.utils.Utils.calcula_distancia_con_mathutils(
+        #     self.fosa_izquierda, self.fosa_derecha
+        # )
+        # print(f"Distancia: {self.distancia_entre_fosas}")
         return {'FINISHED'}
 
     def draw(self, context):
@@ -219,5 +218,3 @@ def register():
 def unregister():
     bpy.utils.unregister_class(OBJECT_OT_nariz)
 
-
-# print("Terminó ejecución: %.4f sec" % (time.time() - time_start))
