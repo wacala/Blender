@@ -39,6 +39,7 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         name="X",
         description="Coordenada en x de la fosa derecha",
         default=0.04,
+        min=0.01,
     )
 
     y_fosa_derecha: bpy.props.FloatProperty(
@@ -55,6 +56,7 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         name="X",
         description="Coordenada en x de la fosa izquierda",
         default=-0.04,
+        min=-0.01,
     )
 
     y_fosa_izquierda: bpy.props.FloatProperty(
