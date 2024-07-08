@@ -5,6 +5,7 @@
 
 import os
 import sys
+import time
 from typing import Optional, List, Any
 
 import bmesh
@@ -12,6 +13,7 @@ import bpy
 from bmesh.types import BMesh
 from skspatial.objects import Points, Plane
 import mathutils
+import numpy
 
 ruta_excepciones = "/Users/walter/Programación/Blender/blw/excepciones.py"
 
@@ -19,7 +21,7 @@ blend_dir = os.path.dirname(ruta_excepciones)
 if blend_dir not in sys.path:
     sys.path.append(blend_dir)
 
-import excepciones as excblw
+import blw.excepciones
 
 
 class Utils:
@@ -47,7 +49,7 @@ class Utils:
     def valida_modo() -> object:
         modo_actual = bpy.context.object.mode
         if modo_actual != 'EDIT':
-            raise excblw.ExcepcionModo()
+            raise blw.excepciones.ExcepcionModo()
         return modo_actual
 
     @staticmethod
@@ -62,7 +64,7 @@ class Utils:
         mi_malla = bmesh.from_edit_mesh(data_objeto)
         vertices_seleccionados = [vert for vert in mi_malla.verts if vert.select]
         if not vertices_seleccionados:
-            raise excblw.ExcepcionNoSeleccion()
+            raise blw.excepciones.ExcepcionNoSeleccion()
         indices_vertices_seleccionados = [vert.index for vert in vertices_seleccionados]
         return mi_malla, vertices_seleccionados, indices_vertices_seleccionados
 
@@ -70,7 +72,7 @@ class Utils:
     def obtiene_obj_seleccionado() -> list:
         objetos_seleccionados = bpy.context.selected_objects
         if objetos_seleccionados[0].type != 'MESH':
-            raise excblw.ExcepcionMalla(objetos_seleccionados)
+            raise blw.excepciones.ExcepcionMalla(objetos_seleccionados)
         return objetos_seleccionados
 
     @staticmethod
@@ -93,7 +95,6 @@ class Utils:
     @staticmethod
     def mueve_bmesh(malla_b: BMesh, coordenadas: List[float]):
         try:
-            # modo_actual = Utils.valida_modo()
             vector_desplazamiento = mathutils.Vector(coordenadas)
             print(f"vector_desplazamiento: {vector_desplazamiento}")
             matriz_mundo_inversa = malla_b.matrix_world.copy()
@@ -106,7 +107,6 @@ class Utils:
             return True
         except Exception as e:
             print(e)
-
 
     @staticmethod
     def obtiene_puntos_proyectados(points: Points, plane: Plane) -> Points:
@@ -143,7 +143,7 @@ class Utils:
             nuevo_plano:
         """
         if all(value == 0 for value in normal):
-            raise excblw.ExcepcionNormal(normal)
+            raise blw.excepciones.ExcepcionNormal(normal)
         try:
             nuevo_plano = Plane(punto, normal)
             print(f"Plano nuevo: {nuevo_plano}")
@@ -156,3 +156,50 @@ class Utils:
         malla = bpy.data.meshes.new("")
         malla.to_mesh()
         pass
+
+    @staticmethod
+    def calcula_distancia_con_mathutils(pos1: list[float], pos2: list[float]) -> float:
+        """
+        Calcula la distancia con mathutils entre dos listas
+        que representan coordenadas x, y, z. Más rápido
+        para pocos cálculos.
+
+        Args:
+            pos1: Lista de corrdenadas 1.
+            pos2: Lista de corrdenadas 2.
+
+        Returns:
+            La distancia.
+        """
+        if pos1 and pos2:
+            array_pos1 = mathutils.Vector(pos1)
+            array_pos2 = mathutils.Vector(pos2)
+            dif = array_pos1 - array_pos2
+            distance = dif.length
+            return distance
+        else:
+            raise blw.excepciones.ExcepcionValorNulo()
+
+    @staticmethod
+    def calcula_distancia_con_numpy(pos1: list[float], pos2: list[float]) -> float:
+        """
+        Calcula la distancia con numpy entre dos listas
+        que representan coordenadas x, y, z. Más rápido
+        para muchos cálculos.
+
+        Args:
+            pos1: Lista de corrdenadas 1.
+            pos2: Lista de corrdenadas 2.
+
+        Returns:
+            La distancia.
+        """
+        if pos1 and pos2:
+            if len(pos1) != len(pos2):
+                raise ValueError("Las listas de entrada no son de la misma longitud")
+            array_pos1 = numpy.asarray(pos1)
+            array_pos2 = numpy.asarray(pos2)
+            distance = numpy.linalg.norm(array_pos1 - array_pos2)
+            return distance
+        else:
+            raise blw.excepciones.ExcepcionValorNulo()

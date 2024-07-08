@@ -1,21 +1,22 @@
 import sys
 import os
-import time
 import importlib
 import bpy
-import numpy
 
 ruta_1: str = "/Users/walter/Programación/Blender/diablos"
 ruta_1_dir: str = os.path.dirname(ruta_1)
 if ruta_1_dir not in sys.path:
-    # Para insertar la ruta al principio
-    # y evitar posibles conflictos
     sys.path.insert(0, str(ruta_1_dir))
 import diablos.diablos_base
 
-importlib.reload(diablos.diablos_base)
+ruta_2: str = "/Users/walter/Programación/Blender/blw"
+ruta_2_dir: str = os.path.dirname(ruta_2)
+if ruta_2_dir not in sys.path:
+    sys.path.insert(0, str(ruta_2_dir))
+import blw.utils
 
-time_start = time.time()
+importlib.reload(diablos.diablos_base)
+importlib.reload(blw.utils)
 
 bl_info = {
     "name": "Nariz paramétrica para ¡Diablos!",
@@ -117,6 +118,10 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         precision=3,
     )
 
+    def __init__(self):
+        self.fosa_derecha = None
+        self.fosa_izquierda = None
+
     @classmethod
     def poll(cls, context):
         return bpy.context.area.type == 'VIEW_3D'
@@ -124,14 +129,20 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
     def execute(self, context):
         # Dos esferas para las fosas nasales
         bpy.ops.mesh.primitive_uv_sphere_add(radius=0.1)
-        fosa_derecha = context.object
-        fosa_derecha.scale = (self.ancho_fosa_derecha, self.largo_fosa_derecha, self.alto_fosa_derecha)
-        fosa_derecha.location = (self.x_fosa_derecha, self.y_fosa_derecha, self.z_fosa_derecha)
+        self.fosa_derecha = context.object
+        self.fosa_derecha.scale = (self.ancho_fosa_derecha, self.largo_fosa_derecha, self.alto_fosa_derecha)
+        self.fosa_derecha.location = (self.x_fosa_derecha, self.y_fosa_derecha, self.z_fosa_derecha)
         bpy.ops.mesh.primitive_uv_sphere_add(radius=0.1)
-        fosa_izquierda = context.object
-        fosa_izquierda.scale = (self.ancho_fosa_izquierda, self.largo_fosa_izquierda, self.alto_fosa_izquierda)
-        fosa_izquierda.location = (self.x_fosa_izquierda, self.y_fosa_izquierda, self.z_fosa_izquierda)
+        self.fosa_izquierda = context.object
+        self.fosa_izquierda.scale = (self.ancho_fosa_izquierda, self.largo_fosa_izquierda, self.alto_fosa_izquierda)
+        self.fosa_izquierda.location = (self.x_fosa_izquierda, self.y_fosa_izquierda, self.z_fosa_izquierda)
         bpy.context.view_layer.update()
+        self.distancia_entre_fosas = blw.utils.Utils.distancia_entre_objetos(
+            self.fosa_izquierda, self.fosa_derecha
+        )
+        self.distancia_entre_fosas = blw.utils.Utils.distancia_entre_objetos_2(
+            self.fosa_izquierda, self.fosa_derecha
+        )
         return {'FINISHED'}
 
     def draw(self, context):
@@ -158,6 +169,14 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         col.prop(self, "distancia_entre_fosas")
 
     def invoke(self, context, event):
+        # self.distancia_entre_fosas = blw.utils.Utils.distancia_entre_objetos(
+        #     self.fosa_izquierda,
+        #     self.fosa_derecha
+        # )
+        # self.distancia_entre_fosas = blw.utils.Utils.distancia_entre_objetos_2(
+        #     self.fosa_izquierda,
+        #     self.fosa_derecha
+        # )
         return self.execute(context)
 
     def tabique(self):
@@ -201,4 +220,4 @@ def unregister():
     bpy.utils.unregister_class(OBJECT_OT_nariz)
 
 
-print("Terminó ejecución: %.4f sec" % (time.time() - time_start))
+# print("Terminó ejecución: %.4f sec" % (time.time() - time_start))

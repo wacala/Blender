@@ -68,14 +68,23 @@ class ExcepcionNoGlobal(ExceptionsBPY):
     def __str__(self):
         return "Error: las coordenadas deben ser globales"
 
+
 class ExcepcionNormal(ExceptionsBPY):
     """Excepción lanzada cuando las coordenadas no son globales"""
 
     def __str__(self):
         return f"Error: la longitud de la normal no debe ser cero, {self._generador_error}"
 
+
 class ExcepcionCreacionPlano(ExceptionsBPY):
     """Excepción lanzada si algo sale mal en la creación del plano"""
 
     def __str__(self):
         return "Error: el plano no pudo crearse"
+
+
+class ExcepcionValorNulo(ExceptionsBPY):
+    """Excepción lanzada si el valor es nulo"""
+
+    def __str__(self):
+        return "Error: alguna de las variables es nula"
