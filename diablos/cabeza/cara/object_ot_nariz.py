@@ -167,10 +167,14 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         # Raíz
         # Punta nasal
         # Surco
+        # blw.utils.Utils.construye_curva(
+        #     coordinates=[(-0.002, 0.01, 0.10), (0, 0.01, 0.11), (0.002, 0.01, 0.10)],
+        #     curve_name="mi_curva",
+        #     curve_type='BEZIER'
+        # )
         blw.utils.Utils.construye_curva(
-            coordinates=[(-0.002, 0.01, 0.10), (0, 0.01, 0.11), (0.002, 0.01, 0.10)],
-            curve_name="mi_curva",
-            curve_type='BEZIER'
+            coordinates=[(5, 0, 0), (0, 0, 8), (10, 0, 0)],
+            curve_name="mi_curva"
         )
         return True
 

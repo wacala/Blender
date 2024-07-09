@@ -243,15 +243,13 @@ class Utils:
 
             # Mapea las coordenadas al spline
             spline = curve_data_block.splines.new(curve_type)
-            if curve_type == 'BEZIER':
-                spline.bezier_points.add(len(coordinates) - 1)
-                for i, coord in enumerate(coordinates):
-                    x, y, z = coord
+            for i, coord in enumerate(coordinates):
+                x, y, z = coord
+                if curve_type == 'BEZIER':
+                    spline.bezier_points.add(1)
                     spline.bezier_points[i].co = (x, y, z)
-            else:
-                spline.points.add(len(coordinates) - 1)
-                for i, coord in enumerate(coordinates):
-                    x, y, z = coord
+                else:
+                    spline.points.add(1)
                     spline.points[i].co = (x, y, z, 1)
 
             # Crea el objeto
