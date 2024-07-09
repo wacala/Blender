@@ -148,7 +148,7 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         return {'FINISHED'}
 
     def draw(self, context):
-        # self.tabique()
+        self.tabique()
         self.fosas()
 
     def invoke(self, context, event):
@@ -162,15 +162,18 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         # )
         return self.execute(context)
 
-    def tabique(self):
+    @staticmethod
+    def tabique():
         # Requiere de tres curvas
         # Raíz
-        bpy.ops.curve.primitive_bezier_curve_add()
-        # Suprapunta
-        bpy.ops.curve.primitive_bezier_curve_add()
+        # Punta nasal
         # Surco
-        bpy.ops.curve.primitive_bezier_curve_add()
-        print(f"Tabique {self}")
+        blw.utils.Utils.construye_curva(
+            coordinates=[(5, 10, 0), (3, 20, 11), (7, 30, 15)],
+            curve_name="mi_curva",
+            curve_type='NURBS'
+        )
+        return True
 
     def fosas(self):
         layout = self.layout

@@ -88,3 +88,10 @@ class ExcepcionValorNulo(ExceptionsBPY):
 
     def __str__(self):
         return "Error: alguna de las variables es nula"
+
+
+class ExcepcionErrorCreandoCurva(ExceptionsBPY):
+    """Excepción lanzada si hay error en la construcción de una curva"""
+
+    def __str__(self):
+        return f"Error: la curva no pudo crearse {self._generador_error}"

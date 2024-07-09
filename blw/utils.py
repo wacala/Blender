@@ -6,6 +6,7 @@
 import os
 import sys
 import time
+import logging
 from typing import Optional, List, Any
 
 import bmesh
@@ -14,6 +15,10 @@ from bmesh.types import BMesh
 from skspatial.objects import Points, Plane
 import mathutils
 import numpy
+import pydantic
+
+import blw.excepciones
+import blw.types
 
 ruta_excepciones = "/Users/walter/Programación/Blender/blw/excepciones.py"
 
@@ -205,3 +210,48 @@ class Utils:
             return distance
         else:
             raise blw.excepciones.ExcepcionValorNulo()
+
+    @staticmethod
+    def construye_curva(coordinates: list[tuple[float, float, float]],
+                        curve_name: str,
+                        curve_type: str) -> bpy.types.Object:
+        """
+        Construye una curva a partir de sus coordenadas, nombre y tipo:
+        'POLY', 'BEZIER', 'NURBS'.
+        Args:
+            coordinates: Lista de tuples de 3 dimensiones
+            curve_name: Nombre de la curva para su identificación
+            curve_type: Tipo de la curva: 'POLY', 'BEZIER', 'NURBS'
+
+        Returns:
+            Objeto de referencia a la curva
+        """
+        # Valida los parámetros de entrada
+        if not all(isinstance(coord, tuple) and len(coord) == 3 for coord in coordinates):
+            raise ValueError("Coordenadas con formato inválido. Se esperan listas de tuples de 3 elementos.")
+        if curve_type not in blw.types.CurveType.__members__:
+            raise ValueError("Tipo de curva inválido. Se espera 'POLY', 'BEZIER', o 'NURBS'.")
+
+        # Crea el bloque de Datos de la Curva
+        try:
+            curve_data_block = bpy.data.curves.new(curve_name, type='CURVE')
+            curve_data_block.dimensions = '3D'
+            curve_data_block.resolution_u = 2
+
+            # Mapea las coordenadas al spline
+            spline = curve_data_block.splines.new(curve_type)
+            spline.points.add(len(coordinates) - 1)
+            for i, coord in enumerate(coordinates):
+                x, y, z = coord
+                spline.points[i].co = (x, y, z, 1)
+
+            # Crea el objeto
+            curve_object = bpy.data.objects.new(curve_name, curve_data_block)
+
+            # Liga el objeto y lo activa
+            bpy.context.collection.objects.link(curve_object)
+            bpy.context.view_layer.objects.active = curve_object
+            return curve_object
+        except blw.excepciones.ExcepcionErrorCreandoCurva as e:
+            logging.error(e)
+            return None
