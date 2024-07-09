@@ -7,6 +7,7 @@ import os
 import sys
 import time
 import logging
+import importlib
 from typing import Optional, List, Any
 
 import bmesh
@@ -27,6 +28,7 @@ if blend_dir not in sys.path:
     sys.path.append(blend_dir)
 
 import blw.excepciones
+importlib.reload(blw.excepciones)
 
 
 class Utils:
@@ -213,37 +215,44 @@ class Utils:
 
     @staticmethod
     def construye_curva(coordinates: list[tuple[float, float, float]],
-                        curve_name: str,
-                        curve_type: str) -> bpy.types.Object:
+                        curve_name: str = 'curve_name',
+                        curve_type: str = 'NURBS',
+                        resolution: int = 3) -> bpy.types.Object:
         """
         Construye una curva a partir de sus coordenadas, nombre y tipo:
-        'POLY', 'BEZIER', 'NURBS'.
+        'POLY', 'BEZIER', 'NURBS', 'BSPLINE', 'CARDINAL'
         Args:
             coordinates: Lista de tuples de 3 dimensiones
             curve_name: Nombre de la curva para su identificación
-            curve_type: Tipo de la curva: 'POLY', 'BEZIER', 'NURBS'
+            curve_type: Tipo de la curva: 'POLY', 'BEZIER', 'NURBS', 'BSPLINE', 'CARDINAL'
+            resolution: Resolución de la curva en número de puntos de control
 
         Returns:
             Objeto de referencia a la curva
         """
-        # Valida los parámetros de entrada
-        if not all(isinstance(coord, tuple) and len(coord) == 3 for coord in coordinates):
-            raise ValueError("Coordenadas con formato inválido. Se esperan listas de tuples de 3 elementos.")
-        if curve_type not in blw.types.CurveType.__members__:
-            raise ValueError("Tipo de curva inválido. Se espera 'POLY', 'BEZIER', o 'NURBS'.")
-
         # Crea el bloque de Datos de la Curva
         try:
+            # Valida los parámetros de entrada
+            if not all(isinstance(coord, tuple) and len(coord) == 3 for coord in coordinates):
+                raise ValueError("Coordenadas con formato inválido. Se esperan listas de tuples de 3 dimensiones.")
+            if curve_type not in blw.types.CurveType.__members__:
+                raise ValueError("Tipo de curva inválido. Se espera 'POLY', 'BEZIER', 'NURBS', 'BSPLINE' o 'CARDINAL'.")
             curve_data_block = bpy.data.curves.new(curve_name, type='CURVE')
             curve_data_block.dimensions = '3D'
-            curve_data_block.resolution_u = 2
+            curve_data_block.resolution_u = resolution
 
             # Mapea las coordenadas al spline
             spline = curve_data_block.splines.new(curve_type)
-            spline.points.add(len(coordinates) - 1)
-            for i, coord in enumerate(coordinates):
-                x, y, z = coord
-                spline.points[i].co = (x, y, z, 1)
+            if curve_type == 'BEZIER':
+                spline.bezier_points.add(len(coordinates) - 1)
+                for i, coord in enumerate(coordinates):
+                    x, y, z = coord
+                    spline.bezier_points[i].co = (x, y, z)
+            else:
+                spline.points.add(len(coordinates) - 1)
+                for i, coord in enumerate(coordinates):
+                    x, y, z = coord
+                    spline.points[i].co = (x, y, z, 1)
 
             # Crea el objeto
             curve_object = bpy.data.objects.new(curve_name, curve_data_block)

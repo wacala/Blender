@@ -33,7 +33,6 @@ bl_info = {
 
 class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
     bl_idname = "object.nariz"
-
     bl_label = "Nariz paramétrica para ¡Diablos!"
     x_fosa_derecha: bpy.props.FloatProperty(
         name="X",
@@ -144,11 +143,11 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
             self.fosa_izquierda.location,
             self.fosa_derecha.location
         )
+        self.tabique()
         bpy.context.view_layer.update()
         return {'FINISHED'}
 
     def draw(self, context):
-        self.tabique()
         self.fosas()
 
     def invoke(self, context, event):
@@ -169,9 +168,9 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         # Punta nasal
         # Surco
         blw.utils.Utils.construye_curva(
-            coordinates=[(5, 10, 0), (3, 20, 11), (7, 30, 15)],
+            coordinates=[(-0.002, 0.01, 0.10), (0, 0.01, 0.11), (0.002, 0.01, 0.10)],
             curve_name="mi_curva",
-            curve_type='NURBS'
+            curve_type='BEZIER'
         )
         return True
 
