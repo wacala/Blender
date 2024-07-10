@@ -8,12 +8,11 @@ import sys
 import time
 import logging
 import importlib
-from typing import Optional, List, Any
+import typing
 
 import bmesh
 import bpy
-from bmesh.types import BMesh
-from skspatial.objects import Points, Plane
+import skspatial
 import mathutils
 import numpy
 import pydantic
@@ -32,12 +31,12 @@ importlib.reload(blw.excepciones)
 
 
 class Utils:
-    vertices_seleccionados: list[Any] = []
+    vertices_seleccionados: list[typing.Any] = []
     indices_vertices_seleccionados: list[int] = []
-    mi_malla: BMesh
+    mi_malla: bmesh.types.BMesh
 
     @staticmethod
-    def obtiene_vertices_seleccionados() -> Optional[List[BMesh | list]]:
+    def obtiene_vertices_seleccionados() -> typing.Optional[typing.List[bmesh.types.BMesh | list]]:
         """
         Obtiene los puntos seleccionados de la malla.
 
@@ -100,13 +99,11 @@ class Utils:
             print(f"Error: {e}")
 
     @staticmethod
-    def mueve_bmesh(malla_b: BMesh, coordenadas: List[float]):
+    def mueve_bmesh(malla_b: bmesh.types.BMesh, coordenadas: typing.List[float]):
         try:
             vector_desplazamiento = mathutils.Vector(coordenadas)
-            print(f"vector_desplazamiento: {vector_desplazamiento}")
             matriz_mundo_inversa = malla_b.matrix_world.copy()
             matriz_mundo_inversa.invert()
-            print(f"Matriz mundo: {matriz_mundo_inversa}")
             vector_aplicado = vector_desplazamiento @ matriz_mundo_inversa
             malla_b.location += vector_aplicado
             # Si coordenadas locales...
@@ -116,13 +113,14 @@ class Utils:
             print(e)
 
     @staticmethod
-    def obtiene_puntos_proyectados(points: Points, plane: Plane) -> Points:
+    def obtiene_puntos_proyectados(points: skspatial.objects.Points,
+                                   plane: skspatial.objects.Plane) -> skspatial.objects.Points:
         """
         Calcula los puntos pruyectados en un plano.
 
         Args:
-            points (List[float]): Los puntos a proyectarse en el plano.
-            plane (Plane): El plano sobre el que se proyectarán los puntos.
+            points (typing.List[float]): Los puntos a proyectarse en el plano.
+            plane (skspatial.objects.Plane): El plano sobre el que se proyectarán los puntos.
 
         Returns:
             puntos_proyectados: Los puntos proyectados.
@@ -137,7 +135,8 @@ class Utils:
         return True
 
     @staticmethod
-    def crea_plano(punto: List[float], normal: List[float]) -> Optional[Plane | None]:
+    def crea_plano(punto: typing.List[float],
+                   normal: typing.List[float]) -> typing.Optional[skspatial.objects.Plane | None]:
         """
         Construye un plano con un punto y una normal
         Args:
@@ -152,29 +151,29 @@ class Utils:
         if all(value == 0 for value in normal):
             raise blw.excepciones.ExcepcionNormal(normal)
         try:
-            nuevo_plano = Plane(punto, normal)
+            nuevo_plano = skspatial.Plane(punto, normal)
             print(f"Plano nuevo: {nuevo_plano}")
             return nuevo_plano
         except Exception as e:
             print(f"Error: se generó un error creando el plano: {e}")
 
     @staticmethod
-    def crea_plano_con_un_punto_y_normal(puntos: List[float], normal: List[float]):
+    def crea_plano_con_un_punto_y_normal(puntos: typing.List[float], normal: typing.List[float]):
         malla = bpy.data.meshes.new("")
         malla.to_mesh()
         pass
 
     @staticmethod
-    def calcula_distancia_con_mathutils(pos1: Optional[list[float] | tuple],
-                                        pos2: Optional[list[float] | tuple]) -> float:
+    def calcula_distancia_con_mathutils(pos1: typing.Optional[list[float] | tuple],
+                                        pos2: typing.Optional[list[float] | tuple]) -> float:
         """
         Calcula la distancia con mathutils entre dos listas
         que representan coordenadas x, y, z. Más rápido
         para pocos cálculos.
 
         Args:
-            pos1: Lista de coordenadas 1.
-            pos2: Lista de coordenadas 2.
+            pos1: typing.Lista de coordenadas 1.
+            pos2: typing.Lista de coordenadas 2.
 
         Returns:
             La distancia.
@@ -189,16 +188,16 @@ class Utils:
             raise blw.excepciones.ExcepcionValorNulo()
 
     @staticmethod
-    def calcula_distancia_con_numpy(pos1: Optional[list[float] | tuple],
-                                    pos2: Optional[list[float] | tuple]) -> float:
+    def calcula_distancia_con_numpy(pos1: typing.Optional[list[float] | tuple],
+                                    pos2: typing.Optional[list[float] | tuple]) -> float:
         """
         Calcula la distancia con numpy entre dos listas
         que representan coordenadas x, y, z. Más rápido
         para volumen alto de cálculos.
 
         Args:
-            pos1: Lista de coordenadas 1.
-            pos2: Lista de coordenadas 2.
+            pos1: typing.Lista de coordenadas 1.
+            pos2: typing.Lista de coordenadas 2.
 
         Returns:
             La distancia.
@@ -217,15 +216,17 @@ class Utils:
     def construye_curva(coordinates: list[tuple[float, float, float]],
                         curve_name: str = 'curve_name',
                         curve_type: str = 'NURBS',
-                        resolution: int = 3) -> bpy.types.Object:
+                        resolution: int = 3,
+                        close: bool = False) -> bpy.types.Object:
         """
         Construye una curva a partir de sus coordenadas, nombre y tipo:
         'POLY', 'BEZIER', 'NURBS', 'BSPLINE', 'CARDINAL'
         Args:
-            coordinates: Lista de tuples de 3 dimensiones
+            coordinates: typing.Lista de tuples de 3 dimensiones
             curve_name: Nombre de la curva para su identificación
             curve_type: Tipo de la curva: 'POLY', 'BEZIER', 'NURBS', 'BSPLINE', 'CARDINAL'
             resolution: Resolución de la curva en número de puntos de control
+            close: Curva cerrada o abierta
 
         Returns:
             Objeto de referencia a la curva
@@ -243,15 +244,17 @@ class Utils:
 
             # Mapea las coordenadas al spline
             spline = curve_data_block.splines.new(curve_type)
+            if close:
+                spline.use_cyclic_u = True
+                spline.use_cyclic_v = True
             for i, coord in enumerate(coordinates):
                 x, y, z = coord
                 if curve_type == 'BEZIER':
-                    spline.bezier_points.add(1)
+                    spline.bezier_points.add(len(coordinates)-1)
                     spline.bezier_points[i].co = (x, y, z)
                 else:
-                    spline.points.add(1)
+                    spline.points.add(len(coordinates)-1)
                     spline.points[i].co = (x, y, z, 1)
-
             # Crea el objeto
             curve_object = bpy.data.objects.new(curve_name, curve_data_block)
 
@@ -262,3 +265,29 @@ class Utils:
         except blw.excepciones.ExcepcionErrorCreandoCurva as e:
             logging.error(e)
             return None
+
+    @staticmethod
+    def reubica_curva(spline: bpy.types.Object, new_location: typing.List[float]) -> bool:
+        """
+            Reubicates a curve to a new location.
+
+            Args:
+                spline: The curve to be reubicated.
+                new_location: The new location for the curve.
+
+            Returns:
+                True if the reubication was successful.
+            """
+        try:
+            if not all([isinstance(coordinate, float) for coordinate in new_location]):
+                raise ValueError("Error: las coordenadas de la nueva posición deben ser números.")
+            if not len(new_location) == 3:
+                raise  ValueError("Error: la dimensión de la nueva ubicación debe ser 3.")
+            print(f"spline {spline}")
+            print(f"new_location {new_location}")
+            print(f"spline.location {spline.location}")
+            spline.location = new_location
+            return True
+        except blw.excepciones.ExcepcionReubicandoCurva as e:
+            logging.error(e)
+            return  False
