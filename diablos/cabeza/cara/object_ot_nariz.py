@@ -167,22 +167,23 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         # Raíz
         # Punta nasal
         # Surco
-        c1 = blw.utils.Utils.construye_curva(
+        c1 = blw.utils.Utils.make_curve(
             coordinates=[(-0.1, 0, 0), (0, 0.05, 0), (0.1, 0, 0)],
             curve_name="raiz",
             close=True,
         )
-        blw.utils.Utils.construye_curva(
+        blw.utils.Utils.make_curve(
             coordinates=[(-0.05, 0, 0), (0, 0.075, 0), (0.05, 0, 0)],
             curve_name="punta_nasal",
             close=True,
         )
-        blw.utils.Utils.construye_curva(
+        blw.utils.Utils.make_curve(
             coordinates=[(-0.08, 0, 0), (0, 0.085, 0), (0.08, 0, 0)],
             curve_name="surco",
             close=True,
         )
-        blw.utils.Utils.reubica_curva(c1, [0.5, 0.5, 0.5])
+        blw.utils.Utils.distribute_objects(objects=[1], axis='X', offset=1)
+
         return True
 
     def fosas(self):

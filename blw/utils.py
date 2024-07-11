@@ -10,10 +10,10 @@ import logging
 import importlib
 import typing
 
-import bmesh
 import bpy
-import skspatial
 import mathutils
+import bmesh
+import skspatial
 import numpy
 import pydantic
 
@@ -27,6 +27,7 @@ if blend_dir not in sys.path:
     sys.path.append(blend_dir)
 
 import blw.excepciones
+
 importlib.reload(blw.excepciones)
 
 
@@ -213,11 +214,11 @@ class Utils:
             raise blw.excepciones.ExcepcionValorNulo()
 
     @staticmethod
-    def construye_curva(coordinates: list[tuple[float, float, float]],
-                        curve_name: str = 'curve_name',
-                        curve_type: str = 'NURBS',
-                        resolution: int = 3,
-                        close: bool = False) -> bpy.types.Object:
+    def make_curve(coordinates: list[tuple[float, float, float]],
+                   curve_name: str = 'curve_name',
+                   curve_type: str = 'NURBS',
+                   resolution: int = 3,
+                   close: bool = False) -> bpy.types.Object:
         """
         Construye una curva a partir de sus coordenadas, nombre y tipo:
         'POLY', 'BEZIER', 'NURBS', 'BSPLINE', 'CARDINAL'
@@ -250,10 +251,10 @@ class Utils:
             for i, coord in enumerate(coordinates):
                 x, y, z = coord
                 if curve_type == 'BEZIER':
-                    spline.bezier_points.add(len(coordinates)-1)
+                    spline.bezier_points.add(len(coordinates) - 1)
                     spline.bezier_points[i].co = (x, y, z)
                 else:
-                    spline.points.add(len(coordinates)-1)
+                    spline.points.add(len(coordinates) - 1)
                     spline.points[i].co = (x, y, z, 1)
             # Crea el objeto
             curve_object = bpy.data.objects.new(curve_name, curve_data_block)
@@ -267,27 +268,34 @@ class Utils:
             return None
 
     @staticmethod
-    def reubica_curva(spline: bpy.types.Object, new_location: typing.List[float]) -> bool:
+    def distribute_objects(objects: list[object],
+                           axis: str,
+                           offset: float = 1) -> bool:
         """
-            Reubicates a curve to a new location.
+            Distribute objects along an axis.
 
             Args:
-                spline: The curve to be reubicated.
-                new_location: The new location for the curve.
+                objects: The objects to be moved. The first and the last are the limits.
+                axis: Orientation of the final arrange.
+                offset: The space between curves.
 
             Returns:
-                True if the reubication was successful.
-            """
+                True if the move was successful.
+        """
         try:
-            if not all([isinstance(coordinate, float) for coordinate in new_location]):
-                raise ValueError("Error: las coordenadas de la nueva posición deben ser números.")
-            if not len(new_location) == 3:
-                raise  ValueError("Error: la dimensión de la nueva ubicación debe ser 3.")
-            print(f"spline {spline}")
-            print(f"new_location {new_location}")
-            print(f"spline.location {spline.location}")
-            spline.location = new_location
+            # if not all([isinstance(coordinate, float) for coordinate in new_location]):
+            #     raise ValueError("Error: las coordenadas de la nueva posición deben ser números.")
+            # if not len(new_location) == 3:
+            #     raise ValueError("Error: la dimensión de la nueva ubicación debe ser 3.")
+            if not blw.types.Axis.is_valid_axis(axis):
+                raise ValueError(f"Error: valor inválido {axis}")
+            # spline.location = new_location
+            for obj in objects:
+                # print(obj.location)
+                print(obj)
+                print(type(obj))
+                print(offset)
             return True
         except blw.excepciones.ExcepcionReubicandoCurva as e:
             logging.error(e)
-            return  False
+            return False
