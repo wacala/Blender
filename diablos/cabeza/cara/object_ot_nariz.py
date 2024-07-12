@@ -13,9 +13,12 @@ ruta_2: str = "/Users/walter/Programación/Blender/blw"
 ruta_2_dir: str = os.path.dirname(ruta_2)
 if ruta_2_dir not in sys.path:
     sys.path.insert(0, str(ruta_2_dir))
+import blw
+import blw.types
 import blw.utils
 
 importlib.reload(diablos.diablos_base)
+importlib.reload(blw.types)
 importlib.reload(blw.utils)
 
 bl_info = {
@@ -167,24 +170,39 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         # Raíz
         # Punta nasal
         # Surco
-        c1 = blw.utils.Utils.make_curve(
-            coordinates=[(-0.1, 0, 0), (0, 0.05, 0), (0.1, 0, 0)],
-            curve_name="raiz",
-            close=True,
-        )
-        blw.utils.Utils.make_curve(
-            coordinates=[(-0.05, 0, 0), (0, 0.075, 0), (0.05, 0, 0)],
-            curve_name="punta_nasal",
-            close=True,
-        )
-        blw.utils.Utils.make_curve(
-            coordinates=[(-0.08, 0, 0), (0, 0.085, 0), (0.08, 0, 0)],
+        curva_surco = blw.utils.Utils.make_3d_curve(
+            coordinates=[(-0.01, 0, 0),
+                         (-0.007, 0.018, 0),
+                         (0, 0.03, 0),
+                         (0.007, 0.018, 0),
+                         (0.01, 0, 0)],
             curve_name="surco",
-            close=True,
+            close=True
         )
-        blw.utils.Utils.distribute_objects(objects=[1], axis='X', offset=1)
-
-        return True
+        curva_punta_nasal = blw.utils.Utils.make_3d_curve(
+            coordinates=[(-0.02, 0, 0),
+                         (-0.017, 0.025, 0),
+                         (0, 0.065, 0),
+                         (0.017, 0.025, 0),
+                         (0.02, 0, 0)],
+            curve_name="punta_nasal",
+            close=True
+        )
+        curva_raiz = blw.utils.Utils.make_3d_curve(
+            coordinates=[(-0.04, 0, 0),
+                         (-0.03, 0.035, 0),
+                         (0, 0.075, 0),
+                         (0.03, 0.035, 0),
+                         (0.04, 0, 0)],
+            curve_name="raíz",
+            close=True
+        )
+        curves = [curva_raiz, curva_punta_nasal, curva_surco]
+        meshes_from_curves = blw.utils.Utils.convert_curves_to_meshes(curves)
+        blw.utils.Utils.distribute_objects(objects=meshes_from_curves, axis='Z', offset=0.04)
+        blw.utils.Utils.link_objects_to_collection(meshes_from_curves)
+        # blw.utils.Utils.link_objects_to_collection(meshes_from_curves)
+        return curves
 
     def fosas(self):
         layout = self.layout

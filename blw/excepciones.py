@@ -97,8 +97,8 @@ class ExcepcionErrorCreandoCurva(ExceptionsBPY):
         return f"Error: la curva no pudo crearse {self._generador_error}"
 
 
-class ExcepcionReubicandoCurva(ExceptionsBPY):
+class ExcepcionDistribuyendoObjeto(ExceptionsBPY):
     """Excepción lanzada si hay error reubicando una curva"""
 
     def __str__(self):
-        return f"Error: la curva no pudo moverse {self._generador_error}"
+        return f"Error: no pudieron distribuirse los objetos {self._generador_error}"

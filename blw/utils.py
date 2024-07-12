@@ -8,8 +8,9 @@ import sys
 import time
 import logging
 import importlib
-import typing
-
+from typing import Optional
+from typing import List
+from typing import Any
 import bpy
 import mathutils
 import bmesh
@@ -32,12 +33,12 @@ importlib.reload(blw.excepciones)
 
 
 class Utils:
-    vertices_seleccionados: list[typing.Any] = []
-    indices_vertices_seleccionados: list[int] = []
+    vertices_seleccionados: List[Any] = []
+    indices_vertices_seleccionados: List[int] = []
     mi_malla: bmesh.types.BMesh
 
     @staticmethod
-    def obtiene_vertices_seleccionados() -> typing.Optional[typing.List[bmesh.types.BMesh | list]]:
+    def obtiene_vertices_seleccionados() -> Optional[List[bmesh.types.BMesh | List]]:
         """
         Obtiene los puntos seleccionados de la malla.
 
@@ -76,14 +77,14 @@ class Utils:
         return mi_malla, vertices_seleccionados, indices_vertices_seleccionados
 
     @staticmethod
-    def obtiene_obj_seleccionado() -> list:
+    def obtiene_obj_seleccionado() -> List:
         objetos_seleccionados = bpy.context.selected_objects
         if objetos_seleccionados[0].type != 'MESH':
             raise blw.excepciones.ExcepcionMalla(objetos_seleccionados)
         return objetos_seleccionados
 
     @staticmethod
-    def mueve_vertices(desfase: list):
+    def mueve_vertices(desfase: List):
         try:
             obj = bpy.context.edit_object
             me = obj.data
@@ -100,7 +101,7 @@ class Utils:
             print(f"Error: {e}")
 
     @staticmethod
-    def mueve_bmesh(malla_b: bmesh.types.BMesh, coordenadas: typing.List[float]):
+    def mueve_bmesh(malla_b: bmesh.types.BMesh, coordenadas: List[float]):
         try:
             vector_desplazamiento = mathutils.Vector(coordenadas)
             matriz_mundo_inversa = malla_b.matrix_world.copy()
@@ -120,7 +121,7 @@ class Utils:
         Calcula los puntos pruyectados en un plano.
 
         Args:
-            points (typing.List[float]): Los puntos a proyectarse en el plano.
+            points (List[float]): Los puntos a proyectarse en el plano.
             plane (skspatial.objects.Plane): El plano sobre el que se proyectarán los puntos.
 
         Returns:
@@ -136,14 +137,14 @@ class Utils:
         return True
 
     @staticmethod
-    def crea_plano(punto: typing.List[float],
-                   normal: typing.List[float]) -> typing.Optional[skspatial.objects.Plane | None]:
+    def crea_plano(punto: List[float],
+                   normal: List[float]) -> Optional[skspatial.objects.Plane | None]:
         """
         Construye un plano con un punto y una normal
         Args:
-            punto: lista de 3 elementos que representan la
+            punto: Lista de 3 elementos que representan la
             posición del punto en el espacio
-            normal: lista de 3 elementos que representan
+            normal: Lista de 3 elementos que representan
             lo componentes de la normal en el espacio
 
         Returns:
@@ -159,22 +160,22 @@ class Utils:
             print(f"Error: se generó un error creando el plano: {e}")
 
     @staticmethod
-    def crea_plano_con_un_punto_y_normal(puntos: typing.List[float], normal: typing.List[float]):
+    def crea_plano_con_un_punto_y_normal(puntos: List[float], normal: List[float]):
         malla = bpy.data.meshes.new("")
         malla.to_mesh()
         pass
 
     @staticmethod
-    def calcula_distancia_con_mathutils(pos1: typing.Optional[list[float] | tuple],
-                                        pos2: typing.Optional[list[float] | tuple]) -> float:
+    def calcula_distancia_con_mathutils(pos1: Optional[List[float] | tuple],
+                                        pos2: Optional[List[float] | tuple]) -> float:
         """
-        Calcula la distancia con mathutils entre dos listas
+        Calcula la distancia con mathutils entre dos Listas
         que representan coordenadas x, y, z. Más rápido
         para pocos cálculos.
 
         Args:
-            pos1: typing.Lista de coordenadas 1.
-            pos2: typing.Lista de coordenadas 2.
+            pos1: Lista de coordenadas 1.
+            pos2: Lista de coordenadas 2.
 
         Returns:
             La distancia.
@@ -189,23 +190,23 @@ class Utils:
             raise blw.excepciones.ExcepcionValorNulo()
 
     @staticmethod
-    def calcula_distancia_con_numpy(pos1: typing.Optional[list[float] | tuple],
-                                    pos2: typing.Optional[list[float] | tuple]) -> float:
+    def calcula_distancia_con_numpy(pos1: Optional[List[float] | tuple],
+                                    pos2: Optional[List[float] | tuple]) -> float:
         """
-        Calcula la distancia con numpy entre dos listas
+        Calcula la distancia con numpy entre dos Listas
         que representan coordenadas x, y, z. Más rápido
         para volumen alto de cálculos.
 
         Args:
-            pos1: typing.Lista de coordenadas 1.
-            pos2: typing.Lista de coordenadas 2.
+            pos1: Lista de coordenadas 1.
+            pos2: Lista de coordenadas 2.
 
         Returns:
             La distancia.
         """
         if pos1 and pos2:
             if len(pos1) != len(pos2):
-                raise ValueError("Las listas de entrada no son de la misma longitud")
+                raise ValueError("Las Listas de entrada no son de la misma longitud")
             array_pos1 = numpy.asarray(pos1)
             array_pos2 = numpy.asarray(pos2)
             distance = numpy.linalg.norm(array_pos1 - array_pos2)
@@ -214,16 +215,17 @@ class Utils:
             raise blw.excepciones.ExcepcionValorNulo()
 
     @staticmethod
-    def make_curve(coordinates: list[tuple[float, float, float]],
-                   curve_name: str = 'curve_name',
-                   curve_type: str = 'NURBS',
-                   resolution: int = 3,
-                   close: bool = False) -> bpy.types.Object:
+    def make_3d_curve(coordinates: List[tuple[float, float, float]],
+                      curve_name: str = 'curve_name',
+                      curve_type: str = 'NURBS',
+                      resolution: int = 3,
+                      close: bool = False) -> bpy.types.Object:
         """
-        Construye una curva a partir de sus coordenadas, nombre y tipo:
+        Construye una curva a partir de sus coordenadas, nombre y
+         tipo:
         'POLY', 'BEZIER', 'NURBS', 'BSPLINE', 'CARDINAL'
         Args:
-            coordinates: typing.Lista de tuples de 3 dimensiones
+            coordinates: Lista de tuples de 3 dimensiones
             curve_name: Nombre de la curva para su identificación
             curve_type: Tipo de la curva: 'POLY', 'BEZIER', 'NURBS', 'BSPLINE', 'CARDINAL'
             resolution: Resolución de la curva en número de puntos de control
@@ -258,17 +260,16 @@ class Utils:
                     spline.points[i].co = (x, y, z, 1)
             # Crea el objeto
             curve_object = bpy.data.objects.new(curve_name, curve_data_block)
-
             # Liga el objeto y lo activa
-            bpy.context.collection.objects.link(curve_object)
-            bpy.context.view_layer.objects.active = curve_object
+            # bpy.context.collection.objects.link(curve_object)
+            # bpy.context.view_layer.objects.active = curve_object
             return curve_object
         except blw.excepciones.ExcepcionErrorCreandoCurva as e:
             logging.error(e)
             return None
 
     @staticmethod
-    def distribute_objects(objects: list[object],
+    def distribute_objects(objects: List[bpy.types.Object],
                            axis: str,
                            offset: float = 1) -> bool:
         """
@@ -283,19 +284,40 @@ class Utils:
                 True if the move was successful.
         """
         try:
-            # if not all([isinstance(coordinate, float) for coordinate in new_location]):
-            #     raise ValueError("Error: las coordenadas de la nueva posición deben ser números.")
-            # if not len(new_location) == 3:
-            #     raise ValueError("Error: la dimensión de la nueva ubicación debe ser 3.")
             if not blw.types.Axis.is_valid_axis(axis):
                 raise ValueError(f"Error: valor inválido {axis}")
-            # spline.location = new_location
+            distance = 0
             for obj in objects:
-                # print(obj.location)
-                print(obj)
-                print(type(obj))
-                print(offset)
+                distance += offset
+                if axis == 'X':
+                    obj.location.x = distance
+                if axis == 'Y':
+                    obj.location.y = distance
+                if axis == 'Z':
+                    obj.location.z = distance
             return True
-        except blw.excepciones.ExcepcionReubicandoCurva as e:
+        except blw.excepciones.ExcepcionDistribuyendoObjeto as e:
             logging.error(e)
             return False
+
+    @staticmethod
+    def convert_curves_to_meshes(curves: Optional[List[bpy.types.Curve] |
+                                                  List]) -> Optional[List[bpy.types.Mesh] | List]:
+        converted_curves_to_meshes = []
+        # Iterate through all objects
+        for curve in curves:
+            mesh = bpy.data.meshes.new_from_object(curve)
+            new_curve_mesh = bpy.data.objects.new(curve.name + "mesh_from_curve", mesh)
+            new_curve_mesh.matrix_world = curve.matrix_world
+            #bpy.context.collection.objects.link(new_curve_mesh)
+            converted_curves_to_meshes.append(new_curve_mesh)
+        return converted_curves_to_meshes
+
+    @staticmethod
+    def link_objects_to_collection(objects_to_be_linked: List[bpy.types.Object]) -> List[bpy.types.Object]:
+        objects_linked = []
+        for object_to_be_linked in objects_to_be_linked:
+            bpy.context.collection.objects.link(object_to_be_linked)
+            # bpy.context.view_layer.objects.active = object_to_be_linked
+            objects_linked.append(object)
+        return objects_linked
