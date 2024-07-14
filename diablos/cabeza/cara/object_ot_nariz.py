@@ -94,6 +94,8 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         default=0.1,
     )
 
+    are_groups_created: bpy.props.BoolProperty(default=False)
+
     ancho_fosa_izquierda: bpy.props.FloatProperty(
         name="Ancho",
         description="Ancho de la fosa izquierda",
@@ -118,9 +120,9 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
     distancia_entre_fosas: bpy.props.FloatProperty(
         name="Dist. ÷ fosas",
         description="Distancia entre fosas",
-        min=0.001,
-        max=0.02,
-        default=0.008,
+        min=0.0012,
+        max=0.04,
+        default=0.009,
         step=1,
         precision=3,
     )
@@ -154,14 +156,6 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         self.fosas()
 
     def invoke(self, context, event):
-        # self.distancia_entre_fosas = blw.utils.Utils.distancia_entre_objetos(
-        #     self.fosa_izquierda,
-        #     self.fosa_derecha
-        # )
-        # self.distancia_entre_fosas = blw.utils.Utils.distancia_entre_objetos_2(
-        #     self.fosa_izquierda,
-        #     self.fosa_derecha
-        # )
         return self.execute(context)
 
     @staticmethod
@@ -197,16 +191,19 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
             curve_name="raíz",
             close=True
         )
-        curves = [curva_raiz, curva_punta_nasal, curva_surco]
-        meshes_from_curves = blw.utils.Utils.convert_curves_to_meshes(curves)
-        blw.utils.Utils.distribute_objects(objects=meshes_from_curves, axis='Z', offset=0.04)
-        blw.utils.Utils.link_objects_to_collection(meshes_from_curves)
-        # blw.utils.Utils.link_objects_to_collection(meshes_from_curves)
-        return curves
+        nose_curves = [curva_raiz, curva_punta_nasal, curva_surco]
+        meshes_from_curves = blw.utils.Utils.convert_curves_to_meshes(curves=nose_curves)
+        print(f"Las curvas mallas cuyos vértices hay que agrupar son: {[m for m in meshes_from_curves]}")
+        # vertices = [blw.utils.Utils.get_vertices_from_mesh(m) for m in meshes_from_curves]
+        #  or cada malla crear un grupo
+        blw.utils.Utils.make_vertices_group_from_meshes(meshes=meshes_from_curves)
+        blw.utils.Utils.distribute_objects(objects=meshes_from_curves, axis='Z', offset=0.035)
+        blw.utils.Utils.link_objects_on_collection(objects_to_be_linked=meshes_from_curves)
+        blw.utils.Utils.join_objects_in_list(object_list=meshes_from_curves)
+        # blw.utils.Utils.fill_mesh(nose_curves)
 
     def fosas(self):
         layout = self.layout
-        layout.label(text="")
         col = layout.column()
         col.label(text="Fosa derecha")
         col.prop(self, "ancho_fosa_derecha")
@@ -225,7 +222,6 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
 
 
 def register():
-    print("En método register()")
     bpy.utils.register_class(OBJECT_OT_nariz)
 
 

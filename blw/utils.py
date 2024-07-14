@@ -15,6 +15,8 @@ import bpy
 import mathutils
 import bmesh
 import skspatial
+from skspatial import objects
+
 import numpy
 import pydantic
 
@@ -67,7 +69,7 @@ class Utils:
         Returns:
             mi_malla
         """
-        objetos_seleccionados = Utils.obtiene_obj_seleccionado()
+        objetos_seleccionados = Utils.get_selected_objects()
         data_objeto = objetos_seleccionados[0].data
         mi_malla = bmesh.from_edit_mesh(data_objeto)
         vertices_seleccionados = [vert for vert in mi_malla.verts if vert.select]
@@ -77,7 +79,7 @@ class Utils:
         return mi_malla, vertices_seleccionados, indices_vertices_seleccionados
 
     @staticmethod
-    def obtiene_obj_seleccionado() -> List:
+    def get_selected_objects() -> List:
         objetos_seleccionados = bpy.context.selected_objects
         if objetos_seleccionados[0].type != 'MESH':
             raise blw.excepciones.ExcepcionMalla(objetos_seleccionados)
@@ -115,14 +117,14 @@ class Utils:
             print(e)
 
     @staticmethod
-    def obtiene_puntos_proyectados(points: skspatial.objects.Points,
-                                   plane: skspatial.objects.Plane) -> skspatial.objects.Points:
+    def obtiene_puntos_proyectados(points: objects.Points,
+                                   plane: objects.Plane) -> objects.Points:
         """
         Calcula los puntos pruyectados en un plano.
 
         Args:
             points (List[float]): Los puntos a proyectarse en el plano.
-            plane (skspatial.objects.Plane): El plano sobre el que se proyectarán los puntos.
+            plane (objects.Plane): El plano sobre el que se proyectarán los puntos.
 
         Returns:
             puntos_proyectados: Los puntos proyectados.
@@ -138,14 +140,14 @@ class Utils:
 
     @staticmethod
     def crea_plano(punto: List[float],
-                   normal: List[float]) -> Optional[skspatial.objects.Plane | None]:
+                   normal: List[float]) -> Optional[objects.Plane | None]:
         """
         Construye un plano con un punto y una normal
         Args:
             punto: Lista de 3 elementos que representan la
             posición del punto en el espacio
             normal: Lista de 3 elementos que representan
-            lo componentes de la normal en el espacio
+            lo componentes de la normal en el espacio*
 
         Returns:
             nuevo_plano:
@@ -153,7 +155,7 @@ class Utils:
         if all(value == 0 for value in normal):
             raise blw.excepciones.ExcepcionNormal(normal)
         try:
-            nuevo_plano = skspatial.Plane(punto, normal)
+            nuevo_plano = objects.Plane(punto, normal)
             print(f"Plano nuevo: {nuevo_plano}")
             return nuevo_plano
         except Exception as e:
@@ -278,7 +280,7 @@ class Utils:
             Args:
                 objects: The objects to be moved. The first and the last are the limits.
                 axis: Orientation of the final arrange.
-                offset: The space between curves.
+                offset: The space between objects.
 
             Returns:
                 True if the move was successful.
@@ -288,13 +290,13 @@ class Utils:
                 raise ValueError(f"Error: valor inválido {axis}")
             distance = 0
             for obj in objects:
-                distance += offset
                 if axis == 'X':
                     obj.location.x = distance
                 if axis == 'Y':
                     obj.location.y = distance
                 if axis == 'Z':
                     obj.location.z = distance
+                distance += offset
             return True
         except blw.excepciones.ExcepcionDistribuyendoObjeto as e:
             logging.error(e)
@@ -309,15 +311,89 @@ class Utils:
             mesh = bpy.data.meshes.new_from_object(curve)
             new_curve_mesh = bpy.data.objects.new(curve.name + "mesh_from_curve", mesh)
             new_curve_mesh.matrix_world = curve.matrix_world
-            #bpy.context.collection.objects.link(new_curve_mesh)
             converted_curves_to_meshes.append(new_curve_mesh)
         return converted_curves_to_meshes
 
     @staticmethod
-    def link_objects_to_collection(objects_to_be_linked: List[bpy.types.Object]) -> List[bpy.types.Object]:
+    def link_objects_on_collection(objects_to_be_linked: List[bpy.types.Object]) -> List[bpy.types.Object]:
         objects_linked = []
         for object_to_be_linked in objects_to_be_linked:
             bpy.context.collection.objects.link(object_to_be_linked)
-            # bpy.context.view_layer.objects.active = object_to_be_linked
             objects_linked.append(object)
         return objects_linked
+
+    @staticmethod
+    def deselect_all():
+        for obj in bpy.data.objects:
+            obj.select_set(False)
+
+    @staticmethod
+    def select_objects(objects_to_select: List[bpy.types.Object]):
+        if not all(isinstance(obj, bpy.types.Object) for obj in objects_to_select):
+            raise TypeError("objects_to_select must be a list of bpy.types.Object")
+        for obj in objects_to_select:
+            obj.select_set(True)
+
+    @staticmethod
+    def join_objects_in_list(object_list: List):
+        blw.utils.Utils.deselect_all()
+        blw.utils.Utils.select_objects(object_list)
+        bpy.context.view_layer.objects.active = object_list[0]
+        bpy.ops.object.join()
+
+    @staticmethod
+    def fill_mesh(mesh_object: bpy.types.Mesh):
+        if not all(isinstance(object, bpy.types.Mesh) for obj in mesh_object):
+            raise TypeError("mesh must be instance of bpy.types.Mesh")
+        for index, vertex in enumerate(mesh_object):
+            print(f"vertex[{vertex}]: {len(mesh_object[index])}")
+
+    @staticmethod
+    def select_object_by_name(object_name: str):
+        bpy.ops.object.select_all(action='DESELECT')
+        obj = bpy.context.scene.objects.get(object_name)
+        if obj:
+            obj.select_set(True)
+
+    @staticmethod
+    def get_vertices_from_mesh(mesh_object: bpy.types.Mesh) -> List[tuple]:
+        obj = bpy.context.active_object
+        if mesh_object.mode == 'EDIT':
+            # This works only in edit mode
+            bm = bmesh.from_edit_mesh(obj.data)
+            vertices = [vert.co for vert in bm.verts]
+        else:
+            # This works only in object mode
+            vertices = [vert.co for vert in obj.data.vertices]
+
+        # Coordinates as tuples
+        plain_vertices = [vert.to_tuple() for vert in vertices]
+        return plain_vertices
+
+    @staticmethod
+    def make_vertices_group_from_meshes(meshes: List[bpy.types.Mesh]):
+        for index, mesh_object in meshes:
+            mesh_object_vertices = blw.utils.Utils.get_vertices_from_mesh(mesh_object)
+            blw.utils.Utils.make_vertices_group_from_vertices(mesh_object,
+                                                              mesh_object_vertices,
+                                                              group_name=f"Vertex_group_{index}")
+
+    @staticmethod
+    def make_vertices_group_from_vertices(mesh: bpy.types.Mesh,
+                                          vertices: List[tuple],
+                                          group_name: str = "Group_name"):
+        """
+        Make vertices group from a list of vertices and the object associated with it.
+        Args:
+            mesh: The object which the group is going to be attached to.
+            vertices: The vertices of the group.
+            group_name: Name of the group.
+        """
+        new_group = mesh.vertex_groups.new(group_name)
+        for vertex in vertices:
+            new_group.add([vertex.index], 1.0, 'REPLACE')
+
+
+
+
+
