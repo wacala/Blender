@@ -14,11 +14,9 @@ from typing import Any
 import bpy
 import mathutils
 import bmesh
-import skspatial
 from skspatial import objects
 
 import numpy
-import pydantic
 
 import blw.excepciones
 import blw.types
@@ -30,7 +28,6 @@ if blend_dir not in sys.path:
     sys.path.append(blend_dir)
 
 import blw.excepciones
-
 importlib.reload(blw.excepciones)
 
 
@@ -357,26 +354,29 @@ class Utils:
 
     @staticmethod
     def get_vertices_from_mesh(mesh_object: bpy.types.Mesh) -> List[tuple]:
-        obj = bpy.context.active_object
         if mesh_object.mode == 'EDIT':
             # This works only in edit mode
-            bm = bmesh.from_edit_mesh(obj.data)
+            bm = bmesh.from_edit_mesh(mesh_object.data)
             vertices = [vert.co for vert in bm.verts]
         else:
             # This works only in object mode
-            vertices = [vert.co for vert in obj.data.vertices]
+            vertices = [vert.co for vert in mesh_object.data.vertices]
 
         # Coordinates as tuples
         plain_vertices = [vert.to_tuple() for vert in vertices]
         return plain_vertices
 
     @staticmethod
+    def get_indexes_of_vertices():
+        pass
+
+    @staticmethod
     def make_vertices_group_from_meshes(meshes: List[bpy.types.Mesh]):
-        for index, mesh_object in meshes:
-            mesh_object_vertices = blw.utils.Utils.get_vertices_from_mesh(mesh_object)
-            blw.utils.Utils.make_vertices_group_from_vertices(mesh_object,
-                                                              mesh_object_vertices,
-                                                              group_name=f"Vertex_group_{index}")
+        all_vertices = [blw.utils.Utils.get_vertices_from_mesh(mesh) for mesh in meshes]
+        for mesh_object, vertices in zip(meshes, all_vertices):
+            blw.utils.Utils.make_vertices_group_from_vertices(mesh=mesh_object,
+                                                              vertices=vertices,
+                                                              group_name=f"{mesh_object.data.name}_group")
 
     @staticmethod
     def make_vertices_group_from_vertices(mesh: bpy.types.Mesh,
@@ -389,11 +389,15 @@ class Utils:
             vertices: The vertices of the group.
             group_name: Name of the group.
         """
-        new_group = mesh.vertex_groups.new(group_name)
-        for vertex in vertices:
-            new_group.add([vertex.index], 1.0, 'REPLACE')
 
+        if not blw.utils.Utils.is_mesh(mesh):
+            raise TypeError("mesh must be an instance of bpy.types.Mesh.")
+        if not all(isinstance(vert, tuple) and len(vert) == 3 for vert in vertices):
+            raise ValueError("Vertices must be a list of tuples with three elements each.")
+        new_vertex_group = mesh.vertex_groups.new(name=group_name)
+        indices = [index for index, _ in enumerate(vertices)]
+        new_vertex_group.add(indices, 1.0, 'REPLACE')
 
-
-
-
+    @staticmethod
+    def is_mesh(obj):
+        return obj.type == 'MESH'

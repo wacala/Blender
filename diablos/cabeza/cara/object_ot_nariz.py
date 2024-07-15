@@ -193,14 +193,10 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         )
         nose_curves = [curva_raiz, curva_punta_nasal, curva_surco]
         meshes_from_curves = blw.utils.Utils.convert_curves_to_meshes(curves=nose_curves)
-        print(f"Las curvas mallas cuyos vértices hay que agrupar son: {[m for m in meshes_from_curves]}")
-        # vertices = [blw.utils.Utils.get_vertices_from_mesh(m) for m in meshes_from_curves]
-        #  or cada malla crear un grupo
         blw.utils.Utils.make_vertices_group_from_meshes(meshes=meshes_from_curves)
         blw.utils.Utils.distribute_objects(objects=meshes_from_curves, axis='Z', offset=0.035)
         blw.utils.Utils.link_objects_on_collection(objects_to_be_linked=meshes_from_curves)
         blw.utils.Utils.join_objects_in_list(object_list=meshes_from_curves)
-        # blw.utils.Utils.fill_mesh(nose_curves)
 
     def fosas(self):
         layout = self.layout
