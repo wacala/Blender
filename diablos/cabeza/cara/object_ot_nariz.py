@@ -193,10 +193,11 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         )
         nose_curves = [curva_raiz, curva_punta_nasal, curva_surco]
         meshes_from_curves = blw.utils.Utils.convert_curves_to_meshes(curves=nose_curves)
-        blw.utils.Utils.make_vertices_group_from_meshes(meshes=meshes_from_curves)
+        blw.utils.Utils.make_vertices_groups_from_meshes(meshes=meshes_from_curves)
         blw.utils.Utils.distribute_objects(objects=meshes_from_curves, axis='Z', offset=0.035)
         blw.utils.Utils.link_objects_on_collection(objects_to_be_linked=meshes_from_curves)
-        blw.utils.Utils.join_objects_in_list(object_list=meshes_from_curves)
+        joined_object = blw.utils.Utils.join_objects_in_list(object_list=meshes_from_curves)
+        print(f"add_faces_to_mesh_vertices: {blw.utils.Utils.add_faces_to_mesh_vertices(joined_object[0])}")
 
     def fosas(self):
         layout = self.layout

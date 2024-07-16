@@ -28,6 +28,7 @@ if blend_dir not in sys.path:
     sys.path.append(blend_dir)
 
 import blw.excepciones
+
 importlib.reload(blw.excepciones)
 
 
@@ -326,17 +327,30 @@ class Utils:
 
     @staticmethod
     def select_objects(objects_to_select: List[bpy.types.Object]):
+        blw.utils.Utils.deselect_all()
         if not all(isinstance(obj, bpy.types.Object) for obj in objects_to_select):
             raise TypeError("objects_to_select must be a list of bpy.types.Object")
         for obj in objects_to_select:
             obj.select_set(True)
 
     @staticmethod
-    def join_objects_in_list(object_list: List):
-        blw.utils.Utils.deselect_all()
+    def join_objects_in_list(object_list: List[bpy.types.Object]) -> bpy.types.Object:
         blw.utils.Utils.select_objects(object_list)
         bpy.context.view_layer.objects.active = object_list[0]
         bpy.ops.object.join()
+        return bpy.context.selected_objects
+
+    @staticmethod
+    def join_objects_in_list_bmesh(object_list: List[bpy.types.Object]):
+        blw.utils.Utils.select_objects(object_list)
+        bm = bmesh.new()
+        for obj in object_list:
+            bm.from_mesh(obj.data)
+        mesh = bpy.data.meshes.new('JoinedMesh')
+        bm.to_mesh(mesh)
+        mesh.update()
+        obj = bpy.data.objects.new('JoinedObject', mesh)
+        bpy.context.collection.objects.link(obj)
 
     @staticmethod
     def fill_mesh(mesh_object: bpy.types.Mesh):
@@ -361,42 +375,46 @@ class Utils:
         else:
             # This works only in object mode
             vertices = [vert.co for vert in mesh_object.data.vertices]
-
         # Coordinates as tuples
         plain_vertices = [vert.to_tuple() for vert in vertices]
         return plain_vertices
 
     @staticmethod
-    def get_indexes_of_vertices():
-        pass
-
-    @staticmethod
-    def make_vertices_group_from_meshes(meshes: List[bpy.types.Mesh]):
+    def make_vertices_groups_from_meshes(meshes: List[bpy.types.Mesh]) -> List[bpy.types.VertexGroups]:
+        vertex_groups = []
         all_vertices = [blw.utils.Utils.get_vertices_from_mesh(mesh) for mesh in meshes]
         for mesh_object, vertices in zip(meshes, all_vertices):
-            blw.utils.Utils.make_vertices_group_from_vertices(mesh=mesh_object,
-                                                              vertices=vertices,
-                                                              group_name=f"{mesh_object.data.name}_group")
+            actual_group = blw.utils.Utils.make_vertices_group_from_mesh(mesh=mesh_object,
+                                                                         group_name=f"{mesh_object.data.name}_group")
+            vertex_groups.append(actual_group)
+        return vertex_groups
 
     @staticmethod
-    def make_vertices_group_from_vertices(mesh: bpy.types.Mesh,
-                                          vertices: List[tuple],
-                                          group_name: str = "Group_name"):
+    def make_vertices_group_from_mesh(mesh: bpy.types.Mesh,
+                                      group_name: str = "Group_name") -> bpy.types.VertexGroups:
         """
         Make vertices group from a list of vertices and the object associated with it.
         Args:
             mesh: The object which the group is going to be attached to.
-            vertices: The vertices of the group.
             group_name: Name of the group.
         """
-
         if not blw.utils.Utils.is_mesh(mesh):
             raise TypeError("mesh must be an instance of bpy.types.Mesh.")
-        if not all(isinstance(vert, tuple) and len(vert) == 3 for vert in vertices):
-            raise ValueError("Vertices must be a list of tuples with three elements each.")
         new_vertex_group = mesh.vertex_groups.new(name=group_name)
-        indices = [index for index, _ in enumerate(vertices)]
-        new_vertex_group.add(indices, 1.0, 'REPLACE')
+        indexes = range(len(mesh.data.vertices))
+        new_vertex_group.add(indexes, 1.0, 'REPLACE')
+        return new_vertex_group
+
+    @staticmethod
+    def add_faces_to_mesh_vertices(mesh: bpy.types.Mesh):
+        return list(blw.utils.Utils.get_vertices_from_mesh_by_index_group(mesh, index) for index in
+                    range(len(mesh.vertex_groups)))
+
+    @staticmethod
+    def get_vertices_from_mesh_by_index_group(mesh: bpy.types.Mesh,
+                                              index_of_group: int) -> List[bpy.types.MeshVertex]:
+        vs = [v for v in mesh.data.vertices if index_of_group in [vg.group for vg in v.groups]]
+        return vs
 
     @staticmethod
     def is_mesh(obj):
