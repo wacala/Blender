@@ -14,6 +14,7 @@ from typing import Any
 import bpy
 import mathutils
 import bmesh
+from pprint import pprint
 from skspatial import objects
 
 import numpy
@@ -407,8 +408,23 @@ class Utils:
 
     @staticmethod
     def add_faces_to_mesh_vertices(mesh: bpy.types.Mesh):
-        return list(blw.utils.Utils.get_vertices_from_mesh_by_index_group(mesh, index) for index in
-                    range(len(mesh.vertex_groups)))
+        if not blw.utils.Utils.is_mesh(mesh):
+            raise ValueError(f"ValueError: {mesh} type is not bpy.types.Mesh")
+        list_of_vertices_by_group = list(blw.utils.Utils.get_vertices_from_mesh_by_index_group(mesh, index)
+                                         for index in
+                                         range(len(mesh.vertex_groups)))
+        all_vertices = list(zip(*list_of_vertices_by_group))
+        bpy.ops.object.mode_set(mode='EDIT')
+        bmesh_data = bmesh.from_edit_mesh(mesh.data)
+        # for v in bmesh_data.verts:
+        #     v.select = True
+        bmesh_data.verts.ensure_lookup_table()
+        for vertices_to_join in all_vertices:
+            blw.utils.Utils.deselect_all()
+            for vertex in vertices_to_join:
+                bmesh_data.verts[vertex.index].select = True
+                break
+                # bpy.ops.mesh.edge_face_add()
 
     @staticmethod
     def get_vertices_from_mesh_by_index_group(mesh: bpy.types.Mesh,
