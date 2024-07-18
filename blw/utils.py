@@ -11,6 +11,7 @@ import importlib
 from typing import Optional
 from typing import List
 from typing import Any
+from typing import Tuple
 import bpy
 import mathutils
 import bmesh
@@ -410,27 +411,76 @@ class Utils:
     def add_faces_to_mesh_vertices(mesh: bpy.types.Mesh):
         if not blw.utils.Utils.is_mesh(mesh):
             raise ValueError(f"ValueError: {mesh} type is not bpy.types.Mesh")
-        list_of_vertices_by_group = list(blw.utils.Utils.get_vertices_from_mesh_by_index_group(mesh, index)
-                                         for index in
-                                         range(len(mesh.vertex_groups)))
-        all_vertices = list(zip(*list_of_vertices_by_group))
+        # list_of_vertices_by_group = list(blw.utils.Utils.get_vertices_from_mesh_by_index_group(mesh, index)
+        #                                  for index in
+        #                                  range(len(mesh.vertex_groups)))
+        list_of_vertices_indexes_by_group = list(
+            blw.utils.Utils.get_indexes_vertices_from_mesh_by_group(mesh, index)
+            for index in
+            range(len(mesh.vertex_groups)))
+        # se necesita una lista con los índices en parejas, no tríos
+        # ej [[a, b, c], [d, e, f,]] -> [[a, b], [b, c], [d, e], [e, f]]
+        all_n_vertices = list(zip(*list_of_vertices_indexes_by_group))
+        all_vertices_paired = blw.utils.Utils.convert_n_to_pairs_list(
+            all_n_vertices)
         bpy.ops.object.mode_set(mode='EDIT')
         bmesh_data = bmesh.from_edit_mesh(mesh.data)
-        # for v in bmesh_data.verts:
-        #     v.select = True
         bmesh_data.verts.ensure_lookup_table()
-        for vertices_to_join in all_vertices:
-            blw.utils.Utils.deselect_all()
-            for vertex in vertices_to_join:
-                bmesh_data.verts[vertex.index].select = True
-                break
-                # bpy.ops.mesh.edge_face_add()
+        blw.utils.Utils.deselect_all()
+        for index_pair in all_vertices_paired:
+            # bmesh_data.verts.ensure_lookup_table()
+            bmesh_data.verts[index_pair[0]].select = True
+            bmesh_data.verts[index_pair[1]].select = True
+            bpy.ops.mesh.edge_face_add()
+            bpy.ops.mesh.select_all(action='DESELECT')
+            print(f"index_pair: {index_pair[0]} {index_pair[1]}")
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.mesh.edge_face_add()
+
+        # for vertices_to_join in all_vertices_paired:
+        #     for vertex in vertices_to_join:
+        #         # print(vertex.index)
+        #         bmesh_data.verts.ensure_lookup_table()
+        #         bmesh_data.verts[vertex.index].select = True
+        #         bpy.ops.mesh.edge_face_add()
+        #         blw.utils.Utils.deselect_all()
 
     @staticmethod
     def get_vertices_from_mesh_by_index_group(mesh: bpy.types.Mesh,
                                               index_of_group: int) -> List[bpy.types.MeshVertex]:
         vs = [v for v in mesh.data.vertices if index_of_group in [vg.group for vg in v.groups]]
         return vs
+
+    @staticmethod
+    def get_indexes_vertices_from_mesh_by_group(mesh: bpy.types.Mesh,
+                                                index_of_group: int) -> List[bpy.types.MeshVertex]:
+        vs = [v.index for v in mesh.data.vertices if index_of_group in [vg.group for vg in v.groups]]
+        return vs
+
+    @staticmethod
+    def make_surface_from_mesh_curves():
+        bpy.ops.object.mode_set(mode='EDIT')
+
+    @staticmethod
+    def convert_n_to_pairs_list(input_list: List[List[Any]]) -> List[Tuple[Any, Any]]:
+        """
+        Convert a list of trios to pairs.
+
+        Args:
+            input_list: The list of trios to convert.
+
+        Returns:
+            List of pairs.
+        """
+        if not input_list:
+            return []
+        return list((sublist[i], sublist[i + 1]) for sublist in input_list for i in range(len(sublist) - 1))
+
+    @staticmethod
+    def select_all_vertices_of_bmesh(bm: bmesh):
+        bmesh_data = bm.data
+        for v in bmesh_data.verts:
+            v.select = True
 
     @staticmethod
     def is_mesh(obj):
