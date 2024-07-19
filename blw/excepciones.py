@@ -19,7 +19,8 @@ class ExcepcionObjeto(ExceptionsBPY):
     """Excepcion que ocurre cuando el generador_error que se suministra es nulo o es de un tipo inválido"""
 
     def __str__(self):
-        return f"Error: el generador_error de tipo {type(self._generador_error).__name__} es inválido: {self._generador_error}"
+        return (f"Error: el generador_error de tipo {type(self._generador_error).__name__} es inválido: "
+                f"{self._generador_error}")
 
 
 class ExcepcionObjetoInvalido(ExceptionsBPY):
@@ -31,7 +32,8 @@ class ExcepcionMalla(ExceptionsBPY):
     """Excepción que ocurre cuando el generador_error suministrado no es una malla"""
 
     def __str__(self):
-        return f"Error: el generador_error del tipo {type(self._generador_error).__name__} es inválido, se requiere MESH"
+        return (f"Error: el generador_error del tipo {type(self._generador_error).__name__}"
+                f"es inválido, se requiere MESH")
 
 
 class ExcepcionPunto(ExceptionsBPY):
@@ -102,3 +104,9 @@ class ExcepcionDistribuyendoObjeto(ExceptionsBPY):
 
     def __str__(self):
         return f"Error: no pudieron distribuirse los objetos {self._generador_error}"
+
+
+class ExcepcionObjetosLigados(ExceptionsBPY):
+    """Excepción lanzada si hay error ligando objetos a la escena"""
+    def __str__(self):
+        return "Error: los objetos no pudieron ligarse a la escena"

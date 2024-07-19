@@ -270,14 +270,14 @@ class Utils:
             return None
 
     @staticmethod
-    def distribute_objects(objects: List[bpy.types.Object],
+    def distribute_objects(objects_to_distribute: List[bpy.types.Object],
                            axis: str,
                            offset: float = 1) -> bool:
         """
             Distribute objects along an axis.
 
             Args:
-                objects: The objects to be moved. The first and the last are the limits.
+                objects_to_distribute: The objects to be moved. The first and the last are the limits.
                 axis: Orientation of the final arrange.
                 offset: The space between objects.
 
@@ -286,41 +286,47 @@ class Utils:
         """
         try:
             if not blw.types.Axis.is_valid_axis(axis):
-                raise ValueError(f"Error: valor inválido {axis}")
+                raise ValueError(f"Error: invalid axis value {axis}")
             distance = 0
-            for obj in objects:
-                if axis == 'X':
-                    obj.location.x = distance
-                if axis == 'Y':
-                    obj.location.y = distance
-                if axis == 'Z':
-                    obj.location.z = distance
+            print(f"obj.data.name: {[obj.data.name for obj in objects_to_distribute]}")
+            axis_mapping = {'X': 'x', 'Y': 'y', 'Z': 'z'}
+            reversed_object_list = list(reversed(objects_to_distribute))
+            for obj in reversed_object_list:
+                setattr(obj.location, axis_mapping[axis], distance)
                 distance += offset
             return True
-        except blw.excepciones.ExcepcionDistribuyendoObjeto as e:
+        except blw.excepciones.ExcepcionDistribuyendoObjeto() as e:
             logging.error(e)
             return False
 
     @staticmethod
     def convert_curves_to_meshes(curves: Optional[List[bpy.types.Curve] |
                                                   List]) -> Optional[List[bpy.types.Mesh] | List]:
-        converted_curves_to_meshes = []
-        # Iterate through all objects
-        for curve in curves:
-            mesh = bpy.data.meshes.new_from_object(curve)
-            new_curve_mesh = bpy.data.objects.new(curve.name + "mesh_from_curve", mesh)
-            new_curve_mesh.data.name = curve.name
-            new_curve_mesh.matrix_world = curve.matrix_world
-            converted_curves_to_meshes.append(new_curve_mesh)
-        return converted_curves_to_meshes
+        converted_meshes = [
+            bpy.data.objects.new(curve.name, bpy.data.meshes.new_from_object(curve)) for curve in
+            curves]
+        for index, new_curve_mesh in enumerate(converted_meshes):
+            new_curve_mesh.data.name = curves[index].name
+            new_curve_mesh.matrix_world = curves[index].matrix_world
+        return converted_meshes
 
     @staticmethod
     def link_objects_on_collection(objects_to_be_linked: List[bpy.types.Object]) -> List[bpy.types.Object]:
-        objects_linked = []
-        for object_to_be_linked in objects_to_be_linked:
-            bpy.context.collection.objects.link(object_to_be_linked)
-            objects_linked.append(object)
-        return objects_linked
+        """
+        Links the objects of the list to the scene.
+        Args:
+            objects_to_be_linked: list of objects to be linked to the scene.
+
+        Returns:
+            linked_objects: objects linked.
+        """
+        try:
+            linked_objects = [bpy.context.collection.objects.link(object_to_be_linked) for
+                              object_to_be_linked in objects_to_be_linked]
+            return linked_objects
+        except blw.excepciones.ExcepcionObjetosLigados() as e:
+            logging.error(f"{e}")
+
 
     @staticmethod
     def deselect_all():

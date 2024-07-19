@@ -3,7 +3,7 @@ from typing import Optional
 
 class ExceptionsBPY(Exception):
 
-    def __init__(self, generador_error: Optional[object] = None):
+    def __init__(self, generador_error: Optional[object] = None) -> None:
         self._generador_error = generador_error
         super().__init__(generador_error)
 
