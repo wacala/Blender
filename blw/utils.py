@@ -135,7 +135,6 @@ class Utils:
     @staticmethod
     def proyecta_vertices_a_plano():
         vertices_seleccionados = Utils.obtiene_vertices_seleccionados()
-        print(f"Vértices seleccionados: {vertices_seleccionados}")
         return True
 
     @staticmethod
@@ -310,6 +309,7 @@ class Utils:
         for curve in curves:
             mesh = bpy.data.meshes.new_from_object(curve)
             new_curve_mesh = bpy.data.objects.new(curve.name + "mesh_from_curve", mesh)
+            new_curve_mesh.data.name = curve.name
             new_curve_mesh.matrix_world = curve.matrix_world
             converted_curves_to_meshes.append(new_curve_mesh)
         return converted_curves_to_meshes
@@ -329,7 +329,7 @@ class Utils:
 
     @staticmethod
     def select_objects(objects_to_select: List[bpy.types.Object]):
-        blw.utils.Utils.deselect_all()
+        Utils.deselect_all()
         if not all(isinstance(obj, bpy.types.Object) for obj in objects_to_select):
             raise TypeError("objects_to_select must be a list of bpy.types.Object")
         for obj in objects_to_select:
@@ -337,14 +337,14 @@ class Utils:
 
     @staticmethod
     def join_objects_in_list(object_list: List[bpy.types.Object]) -> bpy.types.Object:
-        blw.utils.Utils.select_objects(object_list)
+        Utils.select_objects(object_list)
         bpy.context.view_layer.objects.active = object_list[0]
         bpy.ops.object.join()
         return bpy.context.selected_objects
 
     @staticmethod
     def join_objects_in_list_bmesh(object_list: List[bpy.types.Object]):
-        blw.utils.Utils.select_objects(object_list)
+        Utils.select_objects(object_list)
         bm = bmesh.new()
         for obj in object_list:
             bm.from_mesh(obj.data)
@@ -353,13 +353,6 @@ class Utils:
         mesh.update()
         obj = bpy.data.objects.new('JoinedObject', mesh)
         bpy.context.collection.objects.link(obj)
-
-    @staticmethod
-    def fill_mesh(mesh_object: bpy.types.Mesh):
-        if not all(isinstance(object, bpy.types.Mesh) for obj in mesh_object):
-            raise TypeError("mesh must be instance of bpy.types.Mesh")
-        for index, vertex in enumerate(mesh_object):
-            print(f"vertex[{vertex}]: {len(mesh_object[index])}")
 
     @staticmethod
     def select_object_by_name(object_name: str):
@@ -384,10 +377,10 @@ class Utils:
     @staticmethod
     def make_vertices_groups_from_meshes(meshes: List[bpy.types.Mesh]) -> List[bpy.types.VertexGroups]:
         vertex_groups = []
-        all_vertices = [blw.utils.Utils.get_vertices_from_mesh(mesh) for mesh in meshes]
+        all_vertices = [Utils.get_vertices_from_mesh(mesh) for mesh in meshes]
         for mesh_object, vertices in zip(meshes, all_vertices):
-            actual_group = blw.utils.Utils.make_vertices_group_from_mesh(mesh=mesh_object,
-                                                                         group_name=f"{mesh_object.data.name}_group")
+            actual_group = Utils.make_vertices_group_from_mesh(mesh=mesh_object,
+                                                               group_name=f"{mesh_object.data.name}_group")
             vertex_groups.append(actual_group)
         return vertex_groups
 
@@ -400,8 +393,8 @@ class Utils:
             mesh: The object which the group is going to be attached to.
             group_name: Name of the group.
         """
-        if not blw.utils.Utils.is_mesh(mesh):
-            raise TypeError("mesh must be an instance of bpy.types.Mesh.")
+        if not Utils.is_mesh(mesh):
+            raise TypeError("mesh must be an instance of bpy.types.Mesh")
         new_vertex_group = mesh.vertex_groups.new(name=group_name)
         indexes = range(len(mesh.data.vertices))
         new_vertex_group.add(indexes, 1.0, 'REPLACE')
@@ -409,41 +402,29 @@ class Utils:
 
     @staticmethod
     def add_faces_to_mesh_vertices(mesh: bpy.types.Mesh):
-        if not blw.utils.Utils.is_mesh(mesh):
+        if not Utils.is_mesh(mesh):
             raise ValueError(f"ValueError: {mesh} type is not bpy.types.Mesh")
-        # list_of_vertices_by_group = list(blw.utils.Utils.get_vertices_from_mesh_by_index_group(mesh, index)
-        #                                  for index in
-        #                                  range(len(mesh.vertex_groups)))
         list_of_vertices_indexes_by_group = list(
-            blw.utils.Utils.get_indexes_vertices_from_mesh_by_group(mesh, index)
+            Utils.get_indexes_vertices_from_mesh_by_group(mesh, index)
             for index in
             range(len(mesh.vertex_groups)))
-        # se necesita una lista con los índices en parejas, no tríos
-        # ej [[a, b, c], [d, e, f,]] -> [[a, b], [b, c], [d, e], [e, f]]
         all_n_vertices = list(zip(*list_of_vertices_indexes_by_group))
-        all_vertices_paired = blw.utils.Utils.convert_n_to_pairs_list(
+        all_vertices_paired = Utils.convert_n_to_pairs_list(
             all_n_vertices)
         bpy.ops.object.mode_set(mode='EDIT')
         bmesh_data = bmesh.from_edit_mesh(mesh.data)
+        Utils.deselect_all()
         bmesh_data.verts.ensure_lookup_table()
-        blw.utils.Utils.deselect_all()
+        # for index_pair in all_vertices_paired:
+        #     bmesh_data.verts[index_pair[0]].select = True
+        #     bmesh_data.verts[index_pair[1]].select = True
+        #     bpy.ops.mesh.edge_face_add()
+        #     bpy.ops.mesh.select_all(action='DESELECT')
         for index_pair in all_vertices_paired:
-            # bmesh_data.verts.ensure_lookup_table()
-            bmesh_data.verts[index_pair[0]].select = True
-            bmesh_data.verts[index_pair[1]].select = True
-            bpy.ops.mesh.edge_face_add()
-            bpy.ops.mesh.select_all(action='DESELECT')
-            print(f"index_pair: {index_pair[0]} {index_pair[1]}")
+            v1, v2 = index_pair
+            bmesh.ops.contextual_create(bmesh_data, geom=[bmesh_data.verts[v1], bmesh_data.verts[v2]])
         bpy.ops.mesh.select_all(action='SELECT')
         bpy.ops.mesh.edge_face_add()
-
-        # for vertices_to_join in all_vertices_paired:
-        #     for vertex in vertices_to_join:
-        #         # print(vertex.index)
-        #         bmesh_data.verts.ensure_lookup_table()
-        #         bmesh_data.verts[vertex.index].select = True
-        #         bpy.ops.mesh.edge_face_add()
-        #         blw.utils.Utils.deselect_all()
 
     @staticmethod
     def get_vertices_from_mesh_by_index_group(mesh: bpy.types.Mesh,
@@ -477,10 +458,22 @@ class Utils:
         return list((sublist[i], sublist[i + 1]) for sublist in input_list for i in range(len(sublist) - 1))
 
     @staticmethod
-    def select_all_vertices_of_bmesh(bm: bmesh):
-        bmesh_data = bm.data
-        for v in bmesh_data.verts:
-            v.select = True
+    def select_all_mesh_vertices(mesh: bpy.types.Mesh):
+        if Utils.is_mesh(mesh):
+            bmesh_data = mesh.data
+            bm = bmesh.from_edit_mesh(bmesh_data)
+            bm.select_mode = {'VERT'}
+            for v in bm.verts:
+                v.select = True
+
+    @staticmethod
+    def deselect_all_mesh_vertices(mesh: bpy.types.Mesh):
+        if Utils.is_mesh(mesh):
+            bmesh_data = mesh.data
+            bm = bmesh.from_edit_mesh(bmesh_data)
+            bm.select_mode = {'VERT'}
+            for v in bm.verts:
+                v.select = False
 
     @staticmethod
     def is_mesh(obj):
