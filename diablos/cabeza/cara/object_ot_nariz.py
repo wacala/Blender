@@ -120,7 +120,7 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
     distancia_entre_fosas: bpy.props.FloatProperty(
         name="Dist. ÷ fosas",
         description="Distancia entre fosas",
-        min=0.0015,
+        min=0.0017,
         max=0.04,
         default=0.011,
         step=1,
@@ -160,10 +160,6 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
 
     @staticmethod
     def tabique():
-        # Requiere de tres curvas
-        # Raíz
-        # Punta nasal
-        # Surco
         curva_raiz = blw.utils.Utils.make_3d_curve(
             coordinates=[(-0.01, 0, 0),
                          (-0.005, 0.001, 0),
@@ -176,7 +172,7 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         curva_puente = blw.utils.Utils.make_3d_curve(
             coordinates=[(-0.02, 0, 0),
                          (-0.003, 0.02, 0),
-                         (0, 0.035, 0),
+                         (0, 0.028, 0),
                          (0.003, 0.02, 0),
                          (0.02, 0, 0)],
             curve_name="curva_puente",
@@ -191,11 +187,20 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
             curve_name="curva_dorso",
             close=True
         )
+        curva_suprapunta = blw.utils.Utils.make_3d_curve(
+            coordinates=[(-0.024, 0, 0),
+                         (-0.02, 0.022, 0),
+                         (0, 0.042, 0),
+                         (0.02, 0.022, 0),
+                         (0.024, 0, 0)],
+            curve_name="curva_suprapunta",
+            close=True
+        )
         curva_punta_nasal = blw.utils.Utils.make_3d_curve(
             coordinates=[(-0.03, 0, 0),
-                         (-0.017, 0.025, 0),
-                         (0, 0.07, 0),
-                         (0.017, 0.025, 0),
+                         (-0.017, 0.025, 0.003),
+                         (0, 0.07, 0.006),
+                         (0.017, 0.025, 0.003),
                          (0.03, 0, 0)],
             curve_name="punta_nasal",
             close=True
@@ -209,7 +214,7 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
             curve_name="surco",
             close=True
         )
-        nose_curves = [curva_raiz, curva_puente, curva_dorso, curva_punta_nasal, curva_surco]
+        nose_curves = [curva_raiz, curva_puente, curva_dorso, curva_suprapunta, curva_punta_nasal, curva_surco]
         meshes_from_curves = blw.utils.Utils.convert_curves_to_meshes(curves=nose_curves)
         blw.utils.Utils.make_vertices_groups_from_meshes(meshes=meshes_from_curves)
         blw.utils.Utils.distribute_objects(objects_to_distribute=meshes_from_curves, axis='Z', offset=0.02)

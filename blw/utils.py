@@ -6,6 +6,8 @@
 import os
 import sys
 import time
+# import json
+import orjson
 import logging
 import importlib
 from typing import Optional
@@ -19,8 +21,6 @@ from pprint import pprint
 from skspatial import objects
 
 import numpy
-
-import blw.excepciones
 import blw.types
 
 ruta_excepciones = "/Users/walter/Programación/Blender/blw/excepciones.py"
@@ -30,7 +30,6 @@ if blend_dir not in sys.path:
     sys.path.append(blend_dir)
 
 import blw.excepciones
-
 importlib.reload(blw.excepciones)
 
 
@@ -261,9 +260,6 @@ class Utils:
                     spline.points[i].co = (x, y, z, 1)
             # Crea el objeto
             curve_object = bpy.data.objects.new(curve_name, curve_data_block)
-            # Liga el objeto y lo activa
-            # bpy.context.collection.objects.link(curve_object)
-            # bpy.context.view_layer.objects.active = curve_object
             return curve_object
         except blw.excepciones.ExcepcionErrorCreandoCurva as e:
             logging.error(e)
@@ -285,13 +281,17 @@ class Utils:
                 True if the move was successful.
         """
         try:
+            if not objects_to_distribute:
+                raise ValueError("objects_to_distribute list is empty")
+            if not all(isinstance(obj, bpy.types.Object) for obj in objects_to_distribute):
+                raise TypeError("objects_to_distribute must be a list of bpy.types.Object")
             if not blw.types.Axis.is_valid_axis(axis):
                 raise ValueError(f"Error: invalid axis value {axis}")
+            if offset <= 0:
+                raise ValueError("Offset value must be positive")
             distance = 0
-            print(f"obj.data.name: {[obj.data.name for obj in objects_to_distribute]}")
             axis_mapping = {'X': 'x', 'Y': 'y', 'Z': 'z'}
-            reversed_object_list = list(reversed(objects_to_distribute))
-            for obj in reversed_object_list:
+            for obj in reversed(objects_to_distribute):
                 setattr(obj.location, axis_mapping[axis], distance)
                 distance += offset
             return True
@@ -484,3 +484,10 @@ class Utils:
     @staticmethod
     def is_mesh(obj):
         return obj.type == 'MESH'
+
+    @staticmethod
+    def read_json(path_to_json):
+        with open(path_to_json, "rb") as f:
+            json_data = f.read()
+        data = orjson.loads(json_data)
+        return data
