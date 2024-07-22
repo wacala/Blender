@@ -1,6 +1,8 @@
 import sys
 import os
 import importlib
+from pprint import pprint
+
 import bpy
 
 ruta_1: str = "/Users/walter/Programación/Blender/diablos"
@@ -16,6 +18,7 @@ if ruta_2_dir not in sys.path:
 import blw
 import blw.types
 import blw.utils
+from diablos.cabeza.cara.tabique import Tabique
 
 importlib.reload(diablos.diablos_base)
 importlib.reload(blw.types)
@@ -160,62 +163,9 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
 
     @staticmethod
     def tabique():
-        curva_raiz = blw.utils.Utils.make_3d_curve(
-            coordinates=[(-0.01, 0, 0),
-                         (-0.005, 0.001, 0),
-                         (0, 0.003, 0),
-                         (0.005, 0.001, 0),
-                         (0.01, 0, 0)],
-            curve_name="raíz",
-            close=True
-        )
-        curva_puente = blw.utils.Utils.make_3d_curve(
-            coordinates=[(-0.02, 0, 0),
-                         (-0.003, 0.02, 0),
-                         (0, 0.028, 0),
-                         (0.003, 0.02, 0),
-                         (0.02, 0, 0)],
-            curve_name="curva_puente",
-            close=True
-        )
-        curva_dorso = blw.utils.Utils.make_3d_curve(
-            coordinates=[(-0.025, 0, 0),
-                         (-0.02, 0.02, 0),
-                         (0, 0.040, 0),
-                         (0.02, 0.02, 0),
-                         (0.025, 0, 0)],
-            curve_name="curva_dorso",
-            close=True
-        )
-        curva_suprapunta = blw.utils.Utils.make_3d_curve(
-            coordinates=[(-0.024, 0, 0),
-                         (-0.02, 0.022, 0),
-                         (0, 0.042, 0),
-                         (0.02, 0.022, 0),
-                         (0.024, 0, 0)],
-            curve_name="curva_suprapunta",
-            close=True
-        )
-        curva_punta_nasal = blw.utils.Utils.make_3d_curve(
-            coordinates=[(-0.03, 0, 0),
-                         (-0.017, 0.025, 0.003),
-                         (0, 0.07, 0.006),
-                         (0.017, 0.025, 0.003),
-                         (0.03, 0, 0)],
-            curve_name="punta_nasal",
-            close=True
-        )
-        curva_surco = blw.utils.Utils.make_3d_curve(
-            coordinates=[(-0.01, 0, 0),
-                         (-0.003, 0.002, 0),
-                         (0, 0.02, 0),
-                         (0.003, 0.002, 0),
-                         (0.01, 0, 0)],
-            curve_name="surco",
-            close=True
-        )
-        nose_curves = [curva_raiz, curva_puente, curva_dorso, curva_suprapunta, curva_punta_nasal, curva_surco]
-        meshes_from_curves = blw.utils.Utils.convert_curves_to_meshes(curves=nose_curves)
+        t = Tabique()
+        print(f"t.tabique_curves {t.tabique_curves}")
+        meshes_from_curves = blw.utils.Utils.convert_curves_to_meshes(curves=t.tabique_curves)
         blw.utils.Utils.make_vertices_groups_from_meshes(meshes=meshes_from_curves)
         blw.utils.Utils.distribute_objects(objects_to_distribute=meshes_from_curves, axis='Z', offset=0.02)
         blw.utils.Utils.link_objects_on_collection(objects_to_be_linked=meshes_from_curves)
