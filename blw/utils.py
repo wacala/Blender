@@ -491,3 +491,9 @@ class Utils:
             json_data = f.read()
         data = orjson.loads(json_data)
         return data
+
+    @staticmethod
+    def convert_list_to_tuple(input_list: List) -> tuple:
+        if input_list is None:
+            return ()
+        return tuple(input_list)

@@ -11,18 +11,24 @@ if ruta_1_dir not in sys.path:
     sys.path.insert(0, str(ruta_1_dir))
 import diablos.diablos_base
 
-ruta_2: str = "/Users/walter/Programación/Blender/blw"
-ruta_2_dir: str = os.path.dirname(ruta_2)
-if ruta_2_dir not in sys.path:
-    sys.path.insert(0, str(ruta_2_dir))
+ruta_3: str = "/Users/walter/Programación/Blender/blw"
+ruta_3_dir: str = os.path.dirname(ruta_3)
+if ruta_3_dir not in sys.path:
+    sys.path.insert(0, str(ruta_3_dir))
+    
+ruta_3: str = "/Users/walter/Programación/Blender/diablos/cabeza/cara/tabique.py"
+ruta_3_dir: str = os.path.dirname(ruta_3)
+if ruta_3_dir not in sys.path:
+    sys.path.insert(0, str(ruta_3_dir))
 import blw
 import blw.types
 import blw.utils
-from diablos.cabeza.cara.tabique import Tabique
+import diablos.cabeza.cara.tabique
 
 importlib.reload(diablos.diablos_base)
 importlib.reload(blw.types)
 importlib.reload(blw.utils)
+importlib.reload(diablos.cabeza.cara.tabique)
 
 bl_info = {
     "name": "Nariz paramétrica para ¡Diablos!",
@@ -163,9 +169,8 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
 
     @staticmethod
     def tabique():
-        t = Tabique()
-        print(f"t.tabique_curves {t.tabique_curves}")
-        meshes_from_curves = blw.utils.Utils.convert_curves_to_meshes(curves=t.tabique_curves)
+        tabique = diablos.cabeza.cara.tabique.Tabique()
+        meshes_from_curves = blw.utils.Utils.convert_curves_to_meshes(curves=tabique.tabique_curves)
         blw.utils.Utils.make_vertices_groups_from_meshes(meshes=meshes_from_curves)
         blw.utils.Utils.distribute_objects(objects_to_distribute=meshes_from_curves, axis='Z', offset=0.02)
         blw.utils.Utils.link_objects_on_collection(objects_to_be_linked=meshes_from_curves)
