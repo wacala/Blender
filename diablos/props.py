@@ -28,6 +28,7 @@ class CurvePropertiesGroup(bpy.types.PropertyGroup):
             for prop_name in props_names:
                 setattr(prop, prop_name, 1.0)
 
+
 class TabiqueProperties(bpy.types.PropertyGroup):
     raiz = bpy.props.PointerProperty(name="Raiz", type=CurvePropertiesGroup)
     puente = bpy.props.PointerProperty(name="Puente", type=CurvePropertiesGroup)

@@ -16,7 +16,7 @@ ruta_3_dir: str = os.path.dirname(ruta_3)
 if ruta_3_dir not in sys.path:
     sys.path.insert(0, str(ruta_3_dir))
     
-ruta_3: str = "/Users/walter/Programación/Blender/diablos/cabeza/cara/tabique.py"
+ruta_3: str = "/Users/walter/Programación/Blender/diablos/cabeza/cara/makes_tabique.py"
 ruta_3_dir: str = os.path.dirname(ruta_3)
 if ruta_3_dir not in sys.path:
     sys.path.insert(0, str(ruta_3_dir))
@@ -157,7 +157,7 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
             self.fosa_izquierda.location,
             self.fosa_derecha.location
         )
-        self.tabique()
+        self.makes_tabique()
         bpy.context.view_layer.update()
         return {'FINISHED'}
 
@@ -168,7 +168,7 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         return self.execute(context)
 
     @staticmethod
-    def tabique():
+    def makes_tabique():
         tabique = diablos.cabeza.cara.tabique.Tabique()
         meshes_from_curves = blw.utils.Utils.convert_curves_to_meshes(curves=tabique.tabique_curves)
         blw.utils.Utils.make_vertices_groups_from_meshes(meshes=meshes_from_curves)
