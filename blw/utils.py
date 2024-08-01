@@ -497,3 +497,20 @@ class Utils:
         if input_list is None:
             return ()
         return tuple(input_list)
+
+    @staticmethod
+    def remove_double_vertices(mesh):
+        # obj = bpy.context.object
+        # mesh = obj.data
+
+        # Set the merge threshold (e.g., 0.001 for small distances)
+        merge_threshold = 0.001
+
+        # Merge vertices within the threshold
+        mesh.vertices.foreach_set("select", [False] * len(mesh.vertices))
+        for v in mesh.vertices:
+            if not v.select:
+                v.select = True
+                bpy.ops.mesh.merge(type="DISTANCE")
+                v.select = False
+

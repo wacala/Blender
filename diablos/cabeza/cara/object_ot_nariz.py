@@ -1,34 +1,28 @@
 import sys
 import os
-import importlib
-from pprint import pprint
-
 import bpy
+import importlib
 
-ruta_1: str = "/Users/walter/Programación/Blender/diablos"
-ruta_1_dir: str = os.path.dirname(ruta_1)
-if ruta_1_dir not in sys.path:
-    sys.path.insert(0, str(ruta_1_dir))
-import diablos.diablos_base
+ruta: str = "/Users/walter/Programación/Blender/blw"
+ruta_dir: str = os.path.dirname(ruta)
+if ruta_dir not in sys.path:
+    sys.path.insert(0, str(ruta_dir))
 
-ruta_3: str = "/Users/walter/Programación/Blender/blw"
-ruta_3_dir: str = os.path.dirname(ruta_3)
-if ruta_3_dir not in sys.path:
-    sys.path.insert(0, str(ruta_3_dir))
-    
-ruta_3: str = "/Users/walter/Programación/Blender/diablos/cabeza/cara/makes_tabique.py"
-ruta_3_dir: str = os.path.dirname(ruta_3)
-if ruta_3_dir not in sys.path:
-    sys.path.insert(0, str(ruta_3_dir))
-import blw
-import blw.types
+ruta: str = "/Users/walter/Programación/Blender/diablos"
+ruta_dir: str = os.path.dirname(ruta)
+if ruta_dir not in sys.path:
+    sys.path.insert(0, str(ruta_dir))
+
 import blw.utils
+import diablos
+import diablos.diablos_base
 import diablos.cabeza.cara.tabique
+import diablos.props
 
-importlib.reload(diablos.diablos_base)
-importlib.reload(blw.types)
 importlib.reload(blw.utils)
+importlib.reload(diablos.diablos_base)
 importlib.reload(diablos.cabeza.cara.tabique)
+importlib.reload(diablos.props)
 
 bl_info = {
     "name": "Nariz paramétrica para ¡Diablos!",
@@ -46,6 +40,7 @@ bl_info = {
 class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
     bl_idname = "object.nariz"
     bl_label = "Nariz paramétrica para ¡Diablos!"
+
     x_fosa_derecha: bpy.props.FloatProperty(
         name="X",
         description="Coordenada en x de la fosa derecha",
@@ -103,8 +98,6 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         default=0.1,
     )
 
-    are_groups_created: bpy.props.BoolProperty(default=False)
-
     ancho_fosa_izquierda: bpy.props.FloatProperty(
         name="Ancho",
         description="Ancho de la fosa izquierda",
@@ -136,6 +129,10 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         precision=3,
     )
 
+    # raiz: bpy.props.PointerProperty(
+    #     type=diablos.props.TabiqueCurvesProperties.raiz
+    # )
+
     def __init__(self):
         self.fosa_derecha = None
         self.fosa_izquierda = None
@@ -145,24 +142,34 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         return bpy.context.area.type == 'VIEW_3D'
 
     def execute(self, context):
+        print(f"curve_width: {context.scene.tabique_curves_properties.raiz.curve_width}")
         bpy.ops.mesh.primitive_uv_sphere_add(radius=0.1)
         self.fosa_derecha = context.object
-        self.fosa_derecha.scale = (self.ancho_fosa_derecha, self.largo_fosa_derecha, self.alto_fosa_derecha)
-        self.fosa_derecha.location = (self.distancia_entre_fosas/2, self.y_fosa_derecha, self.z_fosa_derecha)
+        self.fosa_derecha.scale = (self.ancho_fosa_derecha,
+                                   self.largo_fosa_derecha,
+                                   self.alto_fosa_derecha)
+        self.fosa_derecha.location = (self.distancia_entre_fosas / 2,
+                                      self.y_fosa_derecha,
+                                      self.z_fosa_derecha)
         bpy.ops.mesh.primitive_uv_sphere_add(radius=0.1)
         self.fosa_izquierda = context.object
-        self.fosa_izquierda.scale = (self.ancho_fosa_izquierda, self.largo_fosa_izquierda, self.alto_fosa_izquierda)
-        self.fosa_izquierda.location = (-self.distancia_entre_fosas/2, self.y_fosa_izquierda, self.z_fosa_izquierda)
+        self.fosa_izquierda.scale = (self.ancho_fosa_izquierda,
+                                     self.largo_fosa_izquierda,
+                                     self.alto_fosa_izquierda)
+        self.fosa_izquierda.location = (-self.distancia_entre_fosas / 2,
+                                        self.y_fosa_izquierda,
+                                        self.z_fosa_izquierda)
         self.distancia_entre_fosas = blw.utils.Utils.calcula_distancia_con_numpy(
             self.fosa_izquierda.location,
             self.fosa_derecha.location
         )
         self.makes_tabique()
-        bpy.context.view_layer.update()
+        context.view_layer.update()
         return {'FINISHED'}
 
     def draw(self, context):
         self.fosas()
+        self.tabique(context)
 
     def invoke(self, context, event):
         return self.execute(context)
@@ -195,11 +202,26 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         col.label(text="Fosas")
         col.prop(self, "distancia_entre_fosas")
 
+    def tabique(self, context):
+        layout = self.layout
+        scene = context.scene
+        col = layout.column()
+        col.label(text="Curvas tabique")
+
+
+classes = [OBJECT_OT_nariz,
+           diablos.props.CurvePropertiesGroup,
+           diablos.props.TabiqueCurvesProperties]
+
 
 def register():
-    bpy.utils.register_class(OBJECT_OT_nariz)
+    for cls in classes:
+        bpy.utils.register_class(cls)
+    bpy.types.Scene.tabique_curves_properties = bpy.props.PointerProperty(
+        type=diablos.props.TabiqueCurvesProperties)
 
 
 def unregister():
-    bpy.utils.unregister_class(OBJECT_OT_nariz)
-
+    for cls in reversed(classes):
+        bpy.utils.unregister_class(cls)
+    del bpy.types.Scene.tabique_curves_properties
