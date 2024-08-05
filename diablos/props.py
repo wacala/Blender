@@ -6,21 +6,24 @@ class CurvePropertiesGroup(bpy.types.PropertyGroup):
         name="Curve width",
         default=1.0,
         min=0.0,
-        max=1,
+        max=2.0,
+        step=1,
     )
 
     curve_length: bpy.props.FloatProperty(
         name="Curve length",
         default=1.0,
         min=0.0,
-        max=1,
+        max=2.0,
+        step=1,
     )
 
     curve_height: bpy.props.FloatProperty(
         name="Curve height",
         default=1.0,
         min=0.0,
-        max=1
+        max=2.0,
+        step=1,
     )
 
     @staticmethod
@@ -44,6 +47,10 @@ class TabiqueCurvesProperties(bpy.types.PropertyGroup):
                           'suprapunta_curve_properties', 'punta_curve_properties', 'surco_curve_properties']:
             prop = getattr(self, prop_name)
             self.set_curve_properties(prop)
+
+
+class FosasCurvesProperties(bpy.types.PropertyGroup):
+    pass
 
 
 classes = (CurvePropertiesGroup, TabiqueCurvesProperties)

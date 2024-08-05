@@ -19,6 +19,7 @@ import mathutils
 import bmesh
 from pprint import pprint
 from skspatial import objects
+from unidecode import unidecode
 
 import numpy
 import blw.types
@@ -514,3 +515,18 @@ class Utils:
                 bpy.ops.mesh.merge(type="DISTANCE")
                 v.select = False
 
+    @staticmethod
+    def replace_accented_chars(strings: List[str]) -> List[str]:
+        return [unidecode(s) for s in strings]
+
+    @staticmethod
+    def lowercase_string_list(lower_case_strings: List[str]) -> List[str]:
+        return [word.lower() for word in lower_case_strings]
+
+    @staticmethod
+    def convert_zip_in_list(zip_object: zip) -> List[list]:
+        """ Converts input zip_object into a list with error handling"""
+        try:
+            return list(map(list, zip_object))
+        except Exception as e:
+            print(f"Error occurred during conversion: {e}")

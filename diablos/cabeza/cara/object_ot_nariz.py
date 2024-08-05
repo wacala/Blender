@@ -13,6 +13,11 @@ ruta_dir: str = os.path.dirname(ruta)
 if ruta_dir not in sys.path:
     sys.path.insert(0, str(ruta_dir))
 
+ruta: str = "/Users/walter/Programación/Blender/blw"
+ruta_dir: str = os.path.dirname(ruta)
+if ruta_dir not in sys.path:
+    sys.path.insert(0, str(ruta_dir))
+
 import blw.utils
 import diablos
 import diablos.diablos_base
@@ -136,13 +141,14 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
     def __init__(self):
         self.fosa_derecha = None
         self.fosa_izquierda = None
+        self.tabique_curves_properties = None
 
     @classmethod
     def poll(cls, context):
         return bpy.context.area.type == 'VIEW_3D'
 
     def execute(self, context):
-        print(f"curve_width: {context.scene.tabique_curves_properties.raiz.curve_width}")
+        self.tabique_curves_properties = context.scene.tabique_curves_properties
         bpy.ops.mesh.primitive_uv_sphere_add(radius=0.1)
         self.fosa_derecha = context.object
         self.fosa_derecha.scale = (self.ancho_fosa_derecha,
@@ -203,10 +209,27 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         col.prop(self, "distancia_entre_fosas")
 
     def tabique(self, context):
+        self.tabique_curves_properties = context.scene.tabique_curves_properties
+        prop_objects = [self.tabique_curves_properties.raiz,
+                        self.tabique_curves_properties.puente,
+                        self.tabique_curves_properties.dorso,
+                        self.tabique_curves_properties.suprapunta,
+                        self.tabique_curves_properties.punta,
+                        self.tabique_curves_properties.surco
+                        ]
+        tabique_curves_titles = ["Raíz", "Puente", "Dorso", "Suprapunta", "Punta", "Surco"]
+        objects_and_curves_titles = blw.utils.Utils.convert_zip_in_list(zip(prop_objects, tabique_curves_titles))
+        print(f"objects_and_curves_titles: {objects_and_curves_titles}")
         layout = self.layout
-        scene = context.scene
-        col = layout.column()
-        col.label(text="Curvas tabique")
+        layout.label(text="Curvas Tabique")
+        for object_and_curve_title in objects_and_curves_titles:
+            layout.label(text=object_and_curve_title[1])
+            print(object_and_curve_title[0])
+            row = layout.row()
+            col_width = row.column()
+            col_length = row.column()
+            col_width.prop(object_and_curve_title[0], "curve_width")
+            col_length.prop(object_and_curve_title[0], "curve_length")
 
 
 classes = [OBJECT_OT_nariz,
