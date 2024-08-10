@@ -530,3 +530,12 @@ class Utils:
             return list(map(list, zip_object))
         except Exception as e:
             print(f"Error occurred during conversion: {e}")
+
+    @staticmethod
+    def mesh_from_curves(input_curves: List[bpy.types.Curve], curves_offset: float = 1, curves_axis: str = "Z") -> bpy.types.Mesh:
+        meshes_from_curves = Utils.convert_curves_to_meshes(curves=input_curves)
+        Utils.make_vertices_groups_from_meshes(meshes=meshes_from_curves)
+        Utils.distribute_objects(objects_to_distribute=meshes_from_curves, axis=curves_axis, offset=curves_offset)
+        Utils.link_objects_on_collection(objects_to_be_linked=meshes_from_curves)
+        joined_object = Utils.join_objects_in_list(object_list=meshes_from_curves)
+        return Utils.add_faces_to_mesh_vertices(joined_object[0])

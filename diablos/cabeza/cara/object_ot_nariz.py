@@ -52,17 +52,17 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         default=0.04,
         min=0.005,
         max=0.05,
-    )
+    ) # type: ignore
 
     y_fosa_derecha: bpy.props.FloatProperty(
         name="Y",
         description="Coordenada en y de la fosa derecha",
-    )
+    ) # type: ignore
 
     z_fosa_derecha: bpy.props.FloatProperty(
         name="Z",
         description="Coordenada en z de la fosa derecha",
-    )
+    ) # type: ignore
 
     x_fosa_izquierda: bpy.props.FloatProperty(
         name="X",
@@ -70,59 +70,59 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         default=-0.04,
         min=-0.025,
         max=-0.005,
-    )
+    ) # type: ignore
 
     y_fosa_izquierda: bpy.props.FloatProperty(
         name="Y",
         description="Coordenada en y de la fosa izquierda",
-    )
+    ) # type: ignore
 
     z_fosa_izquierda: bpy.props.FloatProperty(
         name="Z",
         description="Coordenada en z de la fosa izquierda",
-    )
+    ) # type: ignore
 
     ancho_fosa_derecha: bpy.props.FloatProperty(
         name="Ancho",
         description="Ancho de la fosa derecha",
         min=0.1,
         default=0.1,
-    )
+    ) # type: ignore
 
     largo_fosa_derecha: bpy.props.FloatProperty(
         name="Largo",
         description="Largo de la fosa derecha",
         min=0.1,
         default=0.1,
-    )
+    ) # type: ignore
 
     alto_fosa_derecha: bpy.props.FloatProperty(
         name="Alto",
         description="Alto de la fosa derecha",
         min=0.1,
         default=0.1,
-    )
+    ) # type: ignore
 
     ancho_fosa_izquierda: bpy.props.FloatProperty(
         name="Ancho",
         description="Ancho de la fosa izquierda",
         min=0.1,
         default=0.1,
-    )
+    ) # type: ignore
 
     largo_fosa_izquierda: bpy.props.FloatProperty(
         name="Largo",
         description="Largo de la fosa izquierda",
         min=0.1,
         default=0.1,
-    )
+    ) # type: ignore
 
     alto_fosa_izquierda: bpy.props.FloatProperty(
         name="Alto",
         description="Alto de la fosa izquierda",
         min=0.1,
         default=0.1,
-    )
+    ) # type: ignore
 
     distancia_entre_fosas: bpy.props.FloatProperty(
         name="Dist. ÷ fosas",
@@ -132,16 +132,48 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         default=0.011,
         step=1,
         precision=3,
-    )
+    ) # type: ignore
 
-    # raiz: bpy.props.PointerProperty(
-    #     type=diablos.props.TabiqueCurvesProperties.raiz
-    # )
+    @property
+    def fosa_derecha(self):
+        """Returns the value of the protected variable _fosa_derecha"""
+        return self._fosa_derecha
 
-    def __init__(self):
-        self.fosa_derecha = None
-        self.fosa_izquierda = None
-        self.tabique_curves_properties = None
+    @fosa_derecha.setter
+    def fosa_derecha(self, value):
+        """Sets the value of the protected variable _fosa_derecha"""
+        self._fosa_derecha = value
+
+    @property
+    def fosa_izquierda(self):
+        """Returns the value of the protected variable _fosa_izquierda"""
+        return self._fosa_izquierda
+
+    @fosa_izquierda.setter
+    def fosa_izquierda(self, value):
+        """Sets the value of the protected variable _fosa_izquierda"""
+        self._fosa_izquierda = value
+
+    @property
+    def tabique_curves_properties(self):
+        """Returns the value of the protected variable _tabique_curves_properties"""
+        return self._tabique_curves_properties
+    
+    @tabique_curves_properties.setter
+    def tabique_curves_properties(self, value):
+        """Sets the value of the protected variable _tabique_curves_properties"""
+        self._tabique_curves_properties = value
+
+    @property
+    def tabique_layout(self):
+        """Returns the value of the protected variable _tabique"""
+        return self._tabique
+    
+    @tabique_curves_properties.setter
+    def tabique_layout(self, value):
+        """Sets the value of the protected variable _tabique"""
+        self._tabique = value
+
 
     @classmethod
     def poll(cls, context):
@@ -174,23 +206,23 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         return {'FINISHED'}
 
     def draw(self, context):
-        self.fosas()
-        self.tabique(context)
+        self.fosas_layout()
+        self.tabique_layout(context)
 
     def invoke(self, context, event):
         return self.execute(context)
 
-    @staticmethod
-    def makes_tabique():
-        tabique = diablos.cabeza.cara.tabique.Tabique()
-        meshes_from_curves = blw.utils.Utils.convert_curves_to_meshes(curves=tabique.tabique_curves)
-        blw.utils.Utils.make_vertices_groups_from_meshes(meshes=meshes_from_curves)
-        blw.utils.Utils.distribute_objects(objects_to_distribute=meshes_from_curves, axis='Z', offset=0.02)
-        blw.utils.Utils.link_objects_on_collection(objects_to_be_linked=meshes_from_curves)
-        joined_object = blw.utils.Utils.join_objects_in_list(object_list=meshes_from_curves)
-        blw.utils.Utils.add_faces_to_mesh_vertices(joined_object[0])
+    def makes_tabique(self):
+        self.tabique = diablos.cabeza.cara.tabique.Tabique()
+        blw.utils.Utils.mesh_from_curves(input_curves=self.tabique.tabique_curves, curves_axis="Z", curves_offset=0.02)
+        # meshes_from_curves = blw.utils.Utils.convert_curves_to_meshes(curves=self.tabique.tabique_curves)
+        # blw.utils.Utils.make_vertices_groups_from_meshes(meshes=meshes_from_curves)
+        # blw.utils.Utils.distribute_objects(objects_to_distribute=meshes_from_curves, axis='Z', offset=0.02)
+        # blw.utils.Utils.link_objects_on_collection(objects_to_be_linked=meshes_from_curves)
+        # joined_object = blw.utils.Utils.join_objects_in_list(object_list=meshes_from_curves)
+        # blw.utils.Utils.add_faces_to_mesh_vertices(joined_object[0])
 
-    def fosas(self):
+    def fosas_layout(self):
         layout = self.layout
         col = layout.column()
         col.label(text="Fosa derecha")
@@ -208,7 +240,7 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         col.label(text="Fosas")
         col.prop(self, "distancia_entre_fosas")
 
-    def tabique(self, context):
+    def tabique_layout(self, context):
         self.tabique_curves_properties = context.scene.tabique_curves_properties
         prop_objects = [self.tabique_curves_properties.raiz,
                         self.tabique_curves_properties.puente,
@@ -219,7 +251,6 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
                         ]
         tabique_curves_titles = ["Raíz", "Puente", "Dorso", "Suprapunta", "Punta", "Surco"]
         objects_and_curves_titles = blw.utils.Utils.convert_zip_in_list(zip(prop_objects, tabique_curves_titles))
-        print(f"objects_and_curves_titles: {objects_and_curves_titles}")
         layout = self.layout
         layout.label(text="Curvas Tabique")
         for object_and_curve_title in objects_and_curves_titles:
