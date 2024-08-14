@@ -155,6 +155,15 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         self._fosa_izquierda = value
 
     @property
+    def tabique(self):
+        """Returns the value of the protected variable _tabique"""
+        return self._tabique
+    
+    @tabique_curves_properties.setter
+    def tabique(self, value):
+        self._tabique = value
+
+    @property
     def tabique_curves_properties(self):
         """Returns the value of the protected variable _tabique_curves_properties"""
         return self._tabique_curves_properties
@@ -167,12 +176,12 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
     @property
     def tabique_layout(self):
         """Returns the value of the protected variable _tabique"""
-        return self._tabique
+        return self._tabique_layout
     
     @tabique_curves_properties.setter
     def tabique_layout(self, value):
         """Sets the value of the protected variable _tabique"""
-        self._tabique = value
+        self._tabique_layout = value
 
 
     @classmethod
