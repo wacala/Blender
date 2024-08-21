@@ -22,11 +22,13 @@ import blw.utils
 import diablos
 import diablos.diablos_base
 import diablos.cabeza.cara.tabique
+import diablos.cabeza.cara.fosa
 import diablos.props
 
 importlib.reload(blw.utils)
 importlib.reload(diablos.diablos_base)
 importlib.reload(diablos.cabeza.cara.tabique)
+importlib.reload(diablos.cabeza.cara.fosa)
 importlib.reload(diablos.props)
 
 bl_info = {
@@ -158,8 +160,8 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
     def tabique(self):
         """Returns the value of the protected variable _tabique"""
         return self._tabique
-    
-    @tabique_curves_properties.setter
+
+    @tabique.setter
     def tabique(self, value):
         self._tabique = value
 
@@ -167,7 +169,7 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
     def tabique_curves_properties(self):
         """Returns the value of the protected variable _tabique_curves_properties"""
         return self._tabique_curves_properties
-    
+
     @tabique_curves_properties.setter
     def tabique_curves_properties(self, value):
         """Sets the value of the protected variable _tabique_curves_properties"""
@@ -178,7 +180,7 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         """Returns the value of the protected variable _tabique"""
         return self._tabique_layout
     
-    @tabique_curves_properties.setter
+    @tabique_layout.setter
     def tabique_layout(self, value):
         """Sets the value of the protected variable _tabique"""
         self._tabique_layout = value
@@ -191,26 +193,27 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
     def execute(self, context):
         self.tabique_curves_properties = context.scene.tabique_curves_properties
         bpy.ops.mesh.primitive_uv_sphere_add(radius=0.1)
-        self.fosa_derecha = context.object
-        self.fosa_derecha.scale = (self.ancho_fosa_derecha,
-                                   self.largo_fosa_derecha,
-                                   self.alto_fosa_derecha)
-        self.fosa_derecha.location = (self.distancia_entre_fosas / 2,
-                                      self.y_fosa_derecha,
-                                      self.z_fosa_derecha)
-        bpy.ops.mesh.primitive_uv_sphere_add(radius=0.1)
-        self.fosa_izquierda = context.object
-        self.fosa_izquierda.scale = (self.ancho_fosa_izquierda,
-                                     self.largo_fosa_izquierda,
-                                     self.alto_fosa_izquierda)
-        self.fosa_izquierda.location = (-self.distancia_entre_fosas / 2,
-                                        self.y_fosa_izquierda,
-                                        self.z_fosa_izquierda)
-        self.distancia_entre_fosas = blw.utils.Utils.calcula_distancia_con_numpy(
-            self.fosa_izquierda.location,
-            self.fosa_derecha.location
-        )
+        # self.fosa_derecha = context.object
+        # self.fosa_derecha.scale = (self.ancho_fosa_derecha,
+        #                            self.largo_fosa_derecha,
+        #                            self.alto_fosa_derecha)
+        # self.fosa_derecha.location = (self.distancia_entre_fosas / 2,
+        #                               self.y_fosa_derecha,
+        #                               self.z_fosa_derecha)
+        # bpy.ops.mesh.primitive_uv_sphere_add(radius=0.1)
+        # self.fosa_izquierda = context.object
+        # self.fosa_izquierda.scale = (self.ancho_fosa_izquierda,
+        #                              self.largo_fosa_izquierda,
+        #                              self.alto_fosa_izquierda)
+        # self.fosa_izquierda.location = (-self.distancia_entre_fosas / 2,
+        #                                 self.y_fosa_izquierda,
+        #                                 self.z_fosa_izquierda)
+        # self.distancia_entre_fosas = blw.utils.Utils.calcula_distancia_con_numpy(
+        #     self.fosa_izquierda.location,
+        #     self.fosa_derecha.location
+        # )
         self.makes_tabique()
+        self.builds_fosas()
         context.view_layer.update()
         return {'FINISHED'}
 
@@ -224,12 +227,10 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
     def makes_tabique(self):
         self.tabique = diablos.cabeza.cara.tabique.Tabique()
         blw.utils.Utils.mesh_from_curves(input_curves=self.tabique.tabique_curves, curves_axis="Z", curves_offset=0.02)
-        # meshes_from_curves = blw.utils.Utils.convert_curves_to_meshes(curves=self.tabique.tabique_curves)
-        # blw.utils.Utils.make_vertices_groups_from_meshes(meshes=meshes_from_curves)
-        # blw.utils.Utils.distribute_objects(objects_to_distribute=meshes_from_curves, axis='Z', offset=0.02)
-        # blw.utils.Utils.link_objects_on_collection(objects_to_be_linked=meshes_from_curves)
-        # joined_object = blw.utils.Utils.join_objects_in_list(object_list=meshes_from_curves)
-        # blw.utils.Utils.add_faces_to_mesh_vertices(joined_object[0])
+
+    def builds_fosas(self):
+        self.fosa_derecha = diablos.cabeza.cara.fosa.Fosa()
+
 
     def fosas_layout(self):
         layout = self.layout

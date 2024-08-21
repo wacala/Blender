@@ -27,36 +27,24 @@ importlib.reload(diablos.props)
 
 class Fosa(object):
     @property
-    def fosa_curves_data(self):
-        return self._fosa_curves_data
-
-    @fosa_curves_data.setter
-    def fosa_curves_data(self, value):
-        self._fosa_curves_data = value
-
-    # fosa_properties_group = bpy.props.PointerProperty(type=diablos.props.fosaCurvesProperties)
+    def left_nostril(self):
+        return self._half_sphere
+    
+    @left_nostril.setter
+    def left_nostril(self, value):
+        self._left_nostril = value
 
     @property
-    def fosa_curves(self):
-        return self._fosa_curves
-
-    @fosa_curves.setter
-    def fosa_curves(self, value):
-        self._fosa_curves = value
+    def right_nostril(self):
+        return self._half_sphere
+    
+    @right_nostril.setter
+    def right_nostril(self, value):
+        self._right_nostril = value
 
     def __init__(self) -> None:
-        self._fosa_curves: List[Any] = []
-        self._fosa_curves_data: List[Any] = []
-        self._curve_data: List[Any] = []
-        self._json_curves_data = blw.utils.Utils.read_json(
-            "/Users/walter/Programación/Blender/diablos/cabeza/cara/nariz/data.json")
-        self._fosa_curves_data = self._json_curves_data["fosas_curves_data"]
-        self._curve_data = ({"coordinates": [tuple(coord) for coord in curves_dictionary["coordinates"]],
-                             "curve_name": curves_dictionary["curve_name"]} for
-                            curves_dictionary in self._fosa_curves_data)
-        self._fosa_curves = [blw.utils.Utils.make_3d_curve(coordinates=elem["coordinates"],
-                                                              curve_name=elem["curve_name"],
-                                                              close=True) for elem in self._curve_data]
+        self.left_nostril = blw.utils.Utils.create_half_sphere(radius=0.01, segments=20, rings=15)
+        self.right_nostril = blw.utils.Utils.create_half_sphere(radius=0.01, segments=20, rings=15)
 
 
 if __name__ == "__main__":

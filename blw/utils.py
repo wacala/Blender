@@ -6,7 +6,6 @@
 import os
 import sys
 import time
-# import json
 import orjson
 import logging
 import importlib
@@ -15,8 +14,9 @@ from typing import List
 from typing import Any
 from typing import Tuple
 import bpy
-import mathutils
+import math
 import bmesh
+import mathutils
 from pprint import pprint
 from skspatial import objects
 from unidecode import unidecode
@@ -235,9 +235,7 @@ class Utils:
         Returns:
             Objeto de referencia a la curva
         """
-        # Crea el bloque de Datos de la Curva
         try:
-            # Valida los parámetros de entrada
             if not all(isinstance(coord, tuple) and len(coord) == 3 for coord in coordinates):
                 raise ValueError("Coordenadas con formato inválido. Se esperan listas de tuples de 3 dimensiones.")
             if curve_type not in blw.types.CurveType.__members__:
@@ -245,8 +243,6 @@ class Utils:
             curve_data_block = bpy.data.curves.new(curve_name, type='CURVE')
             curve_data_block.dimensions = '3D'
             curve_data_block.resolution_u = resolution
-
-            # Mapea las coordenadas al spline
             spline = curve_data_block.splines.new(curve_type)
             if close:
                 spline.use_cyclic_u = True
@@ -259,7 +255,6 @@ class Utils:
                 else:
                     spline.points.add(len(coordinates) - 1)
                     spline.points[i].co = (x, y, z, 1)
-            # Crea el objeto
             curve_object = bpy.data.objects.new(curve_name, curve_data_block)
             return curve_object
         except blw.excepciones.ExcepcionErrorCreandoCurva as e:
@@ -303,6 +298,14 @@ class Utils:
     @staticmethod
     def convert_curves_to_meshes(curves: Optional[List[bpy.types.Curve] |
                                                   List]) -> Optional[List[bpy.types.Mesh] | List]:
+        """Convert a list of curves to meshes
+
+        Args:
+            curves (Optional[List[bpy.types.Curve]  |  List]): _description_
+
+        Returns:
+            Optional[List[bpy.types.Mesh] | List]: _description_
+        """
         converted_meshes = [
             bpy.data.objects.new(curve.name, bpy.data.meshes.new_from_object(curve)) for curve in
             curves]
@@ -310,11 +313,66 @@ class Utils:
             new_curve_mesh.data.name = curves[index].name
             new_curve_mesh.matrix_world = curves[index].matrix_world
         return converted_meshes
+    
+    @staticmethod
+    def build_polygon_mesh_from_points(input_points: List[List[float]]) -> List[bpy.types.Mesh]:
+        """Builds a mesh from a list of points
+
+        Args:
+            input_points (List[List[float]]): List of points to convert
+
+        Returns:
+            bpy.types.Mesh: Mesh from input points
+        """
+
+        # Define the vertices of the polygon
+        # vertices = [(1, 1, 0), (1, -1, 0), (-1, -1, 0), (-1, 1, 0)]
+        # edges = []
+        # faces = [(0, 1, 2, 3), (2, 5, 0, 1)]
+        # # faces = [index for index in range(len(input_points))]
+        
+        # mesh_data = bpy.data.meshes.new("cube_mesh_data")
+        # mesh_data.from_pydata(input_points, [], faces)
+        # mesh_data.update()
+            
+        # obj = bpy.data.objects.new("My_Object", mesh_data)
+            
+        # scene = bpy.context.scene
+        # scene.collection.objects.link(obj)
+        # obj.select_set(True)
+        # bpy.context.view_layer.objects.active = obj  # Set object as active
+            
+
+        # # Create a new mesh and object
+        mesh = bpy.data.meshes.new(name="PolygonMesh")
+        # obj = bpy.data.objects.new(name="PolygonObject", object_data=mesh)
+
+        # # Link the object to the scene
+        # scene = bpy.context.scene
+        # scene.collection.objects.link(obj)
+
+        # # Create the polygon
+        # mesh.from_pydata(input_points, edges, faces)
+        # mesh.update()
+
+        # Optionally, switch to edit mode and use bmesh for more complex operations
+        # bpy.context.view_layer.objects.active = obj
+        # bpy.ops.object.mode_set(mode='EDIT')
+        # bm = bmesh.from_edit_mesh(mesh)
+
+        # Example: Flip the normal of the polygon
+        # bm.faces.ensure_lookup_table()
+        # bm.faces[0].normal_flip()
+
+        # Update the mesh
+        # bmesh.update_edit_mesh(mesh)
+        # bpy.ops.object.mode_set(mode='OBJECT')
+        return mesh
 
     @staticmethod
     def link_objects_on_collection(objects_to_be_linked: List[bpy.types.Object]) -> List[bpy.types.Object]:
-        """
-        Links the objects of the list to the scene.
+        """Links the objects of the list to the scene
+
         Args:
             objects_to_be_linked: list of objects to be linked to the scene.
 
@@ -327,7 +385,6 @@ class Utils:
             return linked_objects
         except blw.excepciones.ExcepcionObjetosLigados() as e:
             logging.error(f"{e}")
-
 
     @staticmethod
     def deselect_all():
@@ -517,10 +574,26 @@ class Utils:
 
     @staticmethod
     def replace_accented_chars(strings: List[str]) -> List[str]:
+        """_summary_
+
+        Args:
+            strings (List[str]): _description_
+
+        Returns:
+            List[str]: _description_
+        """
         return [unidecode(s) for s in strings]
 
     @staticmethod
     def lowercase_string_list(lower_case_strings: List[str]) -> List[str]:
+        """_summary_
+
+        Args:
+            lower_case_strings (List[str]): _description_
+
+        Returns:
+            List[str]: _description_
+        """
         return [word.lower() for word in lower_case_strings]
 
     @staticmethod
@@ -532,10 +605,139 @@ class Utils:
             print(f"Error occurred during conversion: {e}")
 
     @staticmethod
-    def mesh_from_curves(input_curves: List[bpy.types.Curve], curves_offset: float = 1, curves_axis: str = "Z") -> bpy.types.Mesh:
+    def mesh_from_curves(input_curves: List[bpy.types.Curve], 
+                         curves_offset: float = 1, 
+                         curves_axis: str = "Z") -> bpy.types.Mesh:
+        """_summary_
+
+        Args:
+            input_curves (List[bpy.types.Curve]): _description_
+            curves_offset (float, optional): _description_. Defaults to 1.
+            curves_axis (str, optional): _description_. Defaults to "Z".
+
+        Returns:
+            bpy.types.Mesh: _description_
+        """
         meshes_from_curves = Utils.convert_curves_to_meshes(curves=input_curves)
         Utils.make_vertices_groups_from_meshes(meshes=meshes_from_curves)
         Utils.distribute_objects(objects_to_distribute=meshes_from_curves, axis=curves_axis, offset=curves_offset)
         Utils.link_objects_on_collection(objects_to_be_linked=meshes_from_curves)
         joined_object = Utils.join_objects_in_list(object_list=meshes_from_curves)
         return Utils.add_faces_to_mesh_vertices(joined_object[0])
+    
+    @staticmethod
+    def mesh_from_points(mesh_input_points: List[list[float]], 
+                         polygon_offset: float = 1, 
+                         curves_axis: str = "Z") -> bpy.types.Mesh:
+        polygon_mesh_from_points = Utils.build_polygon_mesh_from_points(input_points=mesh_input_points)
+        return polygon_mesh_from_points
+
+    @staticmethod
+    def create_verts_faces_sphere(radius=10, segments=32, rings=16):
+        """Creates a sphere
+
+        Args:
+            radius (int, optional): Radius of the sphere. Defaults to 10.
+            segments (int, optional): Segments of the sphere. Defaults to 32.
+            rings (int, optional): Rings of the sphere. Defaults to 16.
+
+        Returns:
+            _type_: _description_
+        """
+        vertices = []
+        faces = []
+
+        for i in range(rings + 1):
+            lat = math.pi * i / rings
+            for j in range(segments):
+                lon = 2 * math.pi * j / segments
+                x = radius * math.sin(lat) * math.cos(lon)
+                y = radius * math.sin(lat) * math.sin(lon)
+                z = radius * math.cos(lat)
+                vertices.append((x, y, z))
+
+        for i in range(rings):
+            for j in range(segments):
+                next_i = i + 1
+                next_j = (j + 1) % segments
+                faces.append((i * segments + j, i * segments + next_j, next_i * segments + next_j, next_i * segments + j))
+
+        return vertices, faces
+    
+    @staticmethod
+    def create_verts_faces_half_sphere(radius=10, segments=32, rings=16):
+        """Create a half-sphere
+
+        Args:
+            radius (int, optional): Radius of the half-sphere. Defaults to 10.
+            segments (int, optional): Segments of the half-sphere. Defaults to 32.
+            rings (int, optional): Rings of the half-sphere. Defaults to 16.
+        """
+        vertices = []
+        faces = []
+
+        # Create vertices
+        for i in range(rings + 1):
+            theta = math.pi * i / rings / 2  # Only half-sphere
+            for j in range(segments):
+                phi = 2 * math.pi * j / segments
+                x = radius * math.sin(theta) * math.cos(phi)
+                y = radius * math.sin(theta) * math.sin(phi)
+                z = radius * math.cos(theta)
+                vertices.append((x, y, z))
+
+        # Create faces
+        for i in range(rings):
+            for j in range(segments):
+                next_i = i + 1
+                next_j = (j + 1) % segments
+                faces.append((i * segments + j, next_i * segments + j, next_i * segments + next_j, i * segments + next_j))
+
+        return vertices, faces
+    
+
+    @staticmethod
+    def create_sphere(radius:int=10, segments:int=32, rings:int=16) -> bpy.types.Object:
+        """Builds a sphere from a given radius, segments, and rings.
+
+        Args:
+            radius (int, optional): Radius of the sphere. Defaults to 10.
+            segments (int, optional): Horizontal segments of the sphere. Defaults to 32.
+            rings (int, optional): Vertical rings of the sphere. Defaults to 16.
+
+        Returns:
+            mesh (bpy.types.Mesh): Sphere object.
+        """
+        vertices, faces = Utils.create_verts_faces_sphere(radius, segments, rings)
+        mesh_data = bpy.data.meshes.new("sphere_mesh_data")
+        mesh_data.from_pydata(vertices, [], faces)
+        mesh_data.update()
+        obj = bpy.data.objects.new("My_Sphere", mesh_data) 
+        scene = bpy.context.scene
+        scene.collection.objects.link(obj)
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj  # Set object as active
+        return obj
+
+    @staticmethod
+    def create_half_sphere(radius:int=10, segments:int=32, rings:int=16) -> bpy.types.Object:
+        """Builds a half-sphere from a given radius, segments, and rings.
+
+        Args:
+            radius (int, optional): _description_. Defaults to 10.
+            segments (int, optional): _description_. Defaults to 32.
+            rings (int, optional): _description_. Defaults to 16.
+
+        Returns:
+            bpy.types.Object: Half-sphere object.
+        """
+        vertices, faces = Utils.create_verts_faces_half_sphere(radius, segments, rings)
+        mesh_data = bpy.data.meshes.new("sphere_mesh_data")
+        mesh_data.from_pydata(vertices, [], faces)
+        mesh_data.update()
+        obj = bpy.data.objects.new("My_Sphere", mesh_data) 
+        scene = bpy.context.scene
+        scene.collection.objects.link(obj)
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj  # Set object as active
+        return obj
