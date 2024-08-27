@@ -3,6 +3,7 @@
 # Walter Rojas
 # Colección de métodos para operaciones diversas
 
+import blw.excepciones
 import os
 import sys
 import time
@@ -30,7 +31,6 @@ blend_dir = os.path.dirname(ruta_excepciones)
 if blend_dir not in sys.path:
     sys.path.append(blend_dir)
 
-import blw.excepciones
 importlib.reload(blw.excepciones)
 
 
@@ -72,10 +72,12 @@ class Utils:
         objetos_seleccionados = Utils.get_selected_objects()
         data_objeto = objetos_seleccionados[0].data
         mi_malla = bmesh.from_edit_mesh(data_objeto)
-        vertices_seleccionados = [vert for vert in mi_malla.verts if vert.select]
+        vertices_seleccionados = [
+            vert for vert in mi_malla.verts if vert.select]
         if not vertices_seleccionados:
             raise blw.excepciones.ExcepcionNoSeleccion()
-        indices_vertices_seleccionados = [vert.index for vert in vertices_seleccionados]
+        indices_vertices_seleccionados = [
+            vert.index for vert in vertices_seleccionados]
         return mi_malla, vertices_seleccionados, indices_vertices_seleccionados
 
     @staticmethod
@@ -207,7 +209,8 @@ class Utils:
         """
         if pos1 and pos2:
             if len(pos1) != len(pos2):
-                raise ValueError("Las Listas de entrada no son de la misma longitud")
+                raise ValueError(
+                    "Las Listas de entrada no son de la misma longitud")
             array_pos1 = numpy.asarray(pos1)
             array_pos2 = numpy.asarray(pos2)
             distance = numpy.linalg.norm(array_pos1 - array_pos2)
@@ -237,9 +240,11 @@ class Utils:
         """
         try:
             if not all(isinstance(coord, tuple) and len(coord) == 3 for coord in coordinates):
-                raise ValueError("Coordenadas con formato inválido. Se esperan listas de tuples de 3 dimensiones.")
+                raise ValueError(
+                    "Coordenadas con formato inválido. Se esperan listas de tuples de 3 dimensiones.")
             if curve_type not in blw.types.CurveType.__members__:
-                raise ValueError("Tipo de curva inválido. Se espera 'POLY', 'BEZIER', 'NURBS', 'BSPLINE' o 'CARDINAL'.")
+                raise ValueError(
+                    "Tipo de curva inválido. Se espera 'POLY', 'BEZIER', 'NURBS', 'BSPLINE' o 'CARDINAL'.")
             curve_data_block = bpy.data.curves.new(curve_name, type='CURVE')
             curve_data_block.dimensions = '3D'
             curve_data_block.resolution_u = resolution
@@ -280,7 +285,8 @@ class Utils:
             if not objects_to_distribute:
                 raise ValueError("objects_to_distribute list is empty")
             if not all(isinstance(obj, bpy.types.Object) for obj in objects_to_distribute):
-                raise TypeError("objects_to_distribute must be a list of bpy.types.Object")
+                raise TypeError(
+                    "objects_to_distribute must be a list of bpy.types.Object")
             if not blw.types.Axis.is_valid_axis(axis):
                 raise ValueError(f"Error: invalid axis value {axis}")
             if offset <= 0:
@@ -313,7 +319,7 @@ class Utils:
             new_curve_mesh.data.name = curves[index].name
             new_curve_mesh.matrix_world = curves[index].matrix_world
         return converted_meshes
-    
+
     @staticmethod
     def build_polygon_mesh_from_points(input_points: List[List[float]]) -> List[bpy.types.Mesh]:
         """Builds a mesh from a list of points
@@ -324,49 +330,7 @@ class Utils:
         Returns:
             bpy.types.Mesh: Mesh from input points
         """
-
-        # Define the vertices of the polygon
-        # vertices = [(1, 1, 0), (1, -1, 0), (-1, -1, 0), (-1, 1, 0)]
-        # edges = []
-        # faces = [(0, 1, 2, 3), (2, 5, 0, 1)]
-        # # faces = [index for index in range(len(input_points))]
-        
-        # mesh_data = bpy.data.meshes.new("cube_mesh_data")
-        # mesh_data.from_pydata(input_points, [], faces)
-        # mesh_data.update()
-            
-        # obj = bpy.data.objects.new("My_Object", mesh_data)
-            
-        # scene = bpy.context.scene
-        # scene.collection.objects.link(obj)
-        # obj.select_set(True)
-        # bpy.context.view_layer.objects.active = obj  # Set object as active
-            
-
-        # # Create a new mesh and object
         mesh = bpy.data.meshes.new(name="PolygonMesh")
-        # obj = bpy.data.objects.new(name="PolygonObject", object_data=mesh)
-
-        # # Link the object to the scene
-        # scene = bpy.context.scene
-        # scene.collection.objects.link(obj)
-
-        # # Create the polygon
-        # mesh.from_pydata(input_points, edges, faces)
-        # mesh.update()
-
-        # Optionally, switch to edit mode and use bmesh for more complex operations
-        # bpy.context.view_layer.objects.active = obj
-        # bpy.ops.object.mode_set(mode='EDIT')
-        # bm = bmesh.from_edit_mesh(mesh)
-
-        # Example: Flip the normal of the polygon
-        # bm.faces.ensure_lookup_table()
-        # bm.faces[0].normal_flip()
-
-        # Update the mesh
-        # bmesh.update_edit_mesh(mesh)
-        # bpy.ops.object.mode_set(mode='OBJECT')
         return mesh
 
     @staticmethod
@@ -395,7 +359,8 @@ class Utils:
     def select_objects(objects_to_select: List[bpy.types.Object]):
         Utils.deselect_all()
         if not all(isinstance(obj, bpy.types.Object) for obj in objects_to_select):
-            raise TypeError("objects_to_select must be a list of bpy.types.Object")
+            raise TypeError(
+                "objects_to_select must be a list of bpy.types.Object")
         for obj in objects_to_select:
             obj.select_set(True)
 
@@ -479,27 +444,26 @@ class Utils:
         bmesh_data = bmesh.from_edit_mesh(mesh.data)
         Utils.deselect_all()
         bmesh_data.verts.ensure_lookup_table()
-        # for index_pair in all_vertices_paired:
-        #     bmesh_data.verts[index_pair[0]].select = True
-        #     bmesh_data.verts[index_pair[1]].select = True
-        #     bpy.ops.mesh.edge_face_add()
-        #     bpy.ops.mesh.select_all(action='DESELECT')
         for index_pair in all_vertices_paired:
             v1, v2 = index_pair
-            bmesh.ops.contextual_create(bmesh_data, geom=[bmesh_data.verts[v1], bmesh_data.verts[v2]])
+            bmesh.ops.contextual_create(
+                bmesh_data, geom=[bmesh_data.verts[v1], bmesh_data.verts[v2]])
         bpy.ops.mesh.select_all(action='SELECT')
         bpy.ops.mesh.edge_face_add()
+        return bpy.context.active_object
 
     @staticmethod
     def get_vertices_from_mesh_by_index_group(mesh: bpy.types.Mesh,
                                               index_of_group: int) -> List[bpy.types.MeshVertex]:
-        vs = [v for v in mesh.data.vertices if index_of_group in [vg.group for vg in v.groups]]
+        vs = [v for v in mesh.data.vertices if index_of_group in [
+            vg.group for vg in v.groups]]
         return vs
 
     @staticmethod
     def get_indexes_vertices_from_mesh_by_group(mesh: bpy.types.Mesh,
                                                 index_of_group: int) -> List[bpy.types.MeshVertex]:
-        vs = [v.index for v in mesh.data.vertices if index_of_group in [vg.group for vg in v.groups]]
+        vs = [v.index for v in mesh.data.vertices if index_of_group in [
+            vg.group for vg in v.groups]]
         return vs
 
     @staticmethod
@@ -605,31 +569,36 @@ class Utils:
             print(f"Error occurred during conversion: {e}")
 
     @staticmethod
-    def mesh_from_curves(input_curves: List[bpy.types.Curve], 
-                         curves_offset: float = 1, 
+    def mesh_from_curves(input_curves: List[bpy.types.Curve],
+                         curves_offset: float = 1,
                          curves_axis: str = "Z") -> bpy.types.Mesh:
-        """_summary_
+        """Constructs a mesh from a list of curves.
 
         Args:
-            input_curves (List[bpy.types.Curve]): _description_
-            curves_offset (float, optional): _description_. Defaults to 1.
-            curves_axis (str, optional): _description_. Defaults to "Z".
+            input_curves (List[bpy.types.Curve]): Curves to construct mesh from.
+            curves_offset (float, optional): Curves offset. Defaults to 1.
+            curves_axis (str, optional): Distribution axis. Defaults to "Z".
 
         Returns:
-            bpy.types.Mesh: _description_
+            bpy.types.Mesh: Mesh normalized.
         """
-        meshes_from_curves = Utils.convert_curves_to_meshes(curves=input_curves)
+        meshes_from_curves = Utils.convert_curves_to_meshes(
+            curves=input_curves)
         Utils.make_vertices_groups_from_meshes(meshes=meshes_from_curves)
-        Utils.distribute_objects(objects_to_distribute=meshes_from_curves, axis=curves_axis, offset=curves_offset)
-        Utils.link_objects_on_collection(objects_to_be_linked=meshes_from_curves)
-        joined_object = Utils.join_objects_in_list(object_list=meshes_from_curves)
+        Utils.distribute_objects(
+            objects_to_distribute=meshes_from_curves, axis=curves_axis, offset=curves_offset)
+        Utils.link_objects_on_collection(
+            objects_to_be_linked=meshes_from_curves)
+        joined_object = Utils.join_objects_in_list(
+            object_list=meshes_from_curves)
         return Utils.add_faces_to_mesh_vertices(joined_object[0])
-    
+
     @staticmethod
-    def mesh_from_points(mesh_input_points: List[list[float]], 
-                         polygon_offset: float = 1, 
+    def mesh_from_points(mesh_input_points: List[list[float]],
+                         polygon_offset: float = 1,
                          curves_axis: str = "Z") -> bpy.types.Mesh:
-        polygon_mesh_from_points = Utils.build_polygon_mesh_from_points(input_points=mesh_input_points)
+        polygon_mesh_from_points = Utils.build_polygon_mesh_from_points(
+            input_points=mesh_input_points)
         return polygon_mesh_from_points
 
     @staticmethod
@@ -660,10 +629,11 @@ class Utils:
             for j in range(segments):
                 next_i = i + 1
                 next_j = (j + 1) % segments
-                faces.append((i * segments + j, i * segments + next_j, next_i * segments + next_j, next_i * segments + j))
+                faces.append((i * segments + j, i * segments + next_j,
+                             next_i * segments + next_j, next_i * segments + j))
 
         return vertices, faces
-    
+
     @staticmethod
     def create_verts_faces_half_sphere(radius=10, segments=32, rings=16):
         """Create a half-sphere
@@ -691,13 +661,13 @@ class Utils:
             for j in range(segments):
                 next_i = i + 1
                 next_j = (j + 1) % segments
-                faces.append((i * segments + j, next_i * segments + j, next_i * segments + next_j, i * segments + next_j))
+                faces.append((i * segments + j, next_i * segments + j,
+                             next_i * segments + next_j, i * segments + next_j))
 
         return vertices, faces
-    
 
     @staticmethod
-    def create_sphere(radius:int=10, segments:int=32, rings:int=16) -> bpy.types.Object:
+    def create_sphere(radius: int = 10, segments: int = 32, rings: int = 16) -> bpy.types.Object:
         """Builds a sphere from a given radius, segments, and rings.
 
         Args:
@@ -708,11 +678,12 @@ class Utils:
         Returns:
             mesh (bpy.types.Mesh): Sphere object.
         """
-        vertices, faces = Utils.create_verts_faces_sphere(radius, segments, rings)
+        vertices, faces = Utils.create_verts_faces_sphere(
+            radius, segments, rings)
         mesh_data = bpy.data.meshes.new("sphere_mesh_data")
         mesh_data.from_pydata(vertices, [], faces)
         mesh_data.update()
-        obj = bpy.data.objects.new("My_Sphere", mesh_data) 
+        obj = bpy.data.objects.new("My_Sphere", mesh_data)
         scene = bpy.context.scene
         scene.collection.objects.link(obj)
         obj.select_set(True)
@@ -720,24 +691,77 @@ class Utils:
         return obj
 
     @staticmethod
-    def create_half_sphere(radius:int=10, segments:int=32, rings:int=16) -> bpy.types.Object:
-        """Builds a half-sphere from a given radius, segments, and rings.
+    def create_half_sphere(radius: int = 10, 
+                           segments: int = 32, 
+                           rings: int = 16, 
+                           name="Half_Sphere",
+                           location=(0.0, 0.0, 0.0)) -> bpy.types.Object:
+        """Builds a half-sphere from a given radius, segments, rings and name.
 
         Args:
             radius (int, optional): _description_. Defaults to 10.
             segments (int, optional): _description_. Defaults to 32.
             rings (int, optional): _description_. Defaults to 16.
+            name (string, optional): _description_. Defaults to "Half_Sphere".
 
         Returns:
             bpy.types.Object: Half-sphere object.
         """
-        vertices, faces = Utils.create_verts_faces_half_sphere(radius, segments, rings)
+        vertices, faces = Utils.create_verts_faces_half_sphere(
+            radius, segments, rings)
         mesh_data = bpy.data.meshes.new("sphere_mesh_data")
         mesh_data.from_pydata(vertices, [], faces)
         mesh_data.update()
-        obj = bpy.data.objects.new("My_Sphere", mesh_data) 
+        obj = bpy.data.objects.new(name, mesh_data)
         scene = bpy.context.scene
         scene.collection.objects.link(obj)
         obj.select_set(True)
         bpy.context.view_layer.objects.active = obj  # Set object as active
+        obj.location = location
         return obj
+
+    @staticmethod
+    def set_dimensions(obj, width, height, length):
+        obj.scale = (width, height, length)
+
+    @staticmethod
+    def correct_mesh_normals(obj):
+        if obj and obj.type == 'MESH':
+            # Create a BMesh from the object's mesh data
+            bm = bmesh.new()
+            bm.from_mesh(obj.data)
+            
+            # Recalculate normals
+            bm.normal_update()
+            
+            # Update the mesh with the new normals
+            # bpy.ops.object.mode_set(mode='OBJECT')
+            bm.to_mesh(obj.data)
+            # bpy.ops.object.mode_set(mode='EDIT')
+            bm.free()
+            
+            print("Normals have been corrected.")
+        else:
+            print("Active object is not a mesh.")
+
+    @staticmethod
+    def clean_geometry(obj_name):
+        # Select the object
+        obj = bpy.data.objects[obj_name]
+        bpy.context.view_layer.objects.active = obj
+        obj.select_set(True)
+
+        # Switch to EDIT mode
+        bpy.ops.object.mode_set(mode='EDIT')
+
+        # Remove doubles
+        bpy.ops.mesh.remove_doubles()
+
+        # Recalculate normals
+        bpy.ops.mesh.normals_make_consistent(inside=False)
+
+        # Convert tris to quads
+        bpy.ops.mesh.tris_convert_to_quads()
+
+        # Switch back to OBJECT mode
+        bpy.ops.object.mode_set(mode='OBJECT')

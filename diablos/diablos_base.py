@@ -8,7 +8,7 @@ import abc
 import bpy
 
 
-class MiMetaClass(type(abc.ABC), type(bpy.types.Operator)):
+class MyMetaClass(type(abc.ABC), type(bpy.types.Operator)):
     """
     Metaclase que se usa como parámetro en múltiple herencia
     para resolver el conflicto de tipo. El método type(class) devuelve
@@ -18,18 +18,14 @@ class MiMetaClass(type(abc.ABC), type(bpy.types.Operator)):
     pass
 
 
-class DiablosBase(abc.ABC, bpy.types.Operator, metaclass=MiMetaClass):
-    bl_idname = "object.mi_operator_personalizado"
-    bl_label = "Mi Operator personalizado"
-    bl_options = {'REGISTER', 'UNDO'}
-
+class DiablosBase(abc.ABC, bpy.types.Operator, metaclass=MyMetaClass):
     @classmethod
     def register(cls) -> None:
-        print(f"Clase {cls} registrada")
+        print(f"Clase {cls} registered")
 
     @classmethod
     def unregister(cls) -> None:
-        pass
+        print(f"Clase {cls} unregistered")
 
     # Sobreescritura del método preconstruído __subclasshook__
     # con el que se valida si la subclase pertenece a la clase
@@ -40,29 +36,6 @@ class DiablosBase(abc.ABC, bpy.types.Operator, metaclass=MiMetaClass):
                 return True
         return NotImplemented
 
-    # ----- PROPIEDADES
-
-    # posicion: bpy.props.FloatVectorProperty(
-    #     name="posicion",
-    #     description="Posición del rasgo",
-    # )
-    #
-    # dimensiones: bpy.props.FloatVectorProperty(
-    #     name="dimensiones",
-    #     description="Dimensiones del rasgo",
-    # )
-    #
-    # def set_posicion(self, valor: bpy.props.FloatVectorProperty):
-    #     pass
-    #
-    # def get_posicion(self) -> bpy.props.FloatVectorProperty:
-    #     pass
-    #
-    # def set_dimensiones(self, valor: bpy.props.FloatVectorProperty):
-    #     pass
-    #
-    # def get_dimensiones(self) -> bpy.props.FloatVectorProperty:
-    #     pass
 
     @staticmethod
     def metodo_estatico(v1, v2):

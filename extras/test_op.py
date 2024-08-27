@@ -23,7 +23,7 @@ from bpy.props import IntProperty, FloatProperty
 class MESH_OT_plantilla(Operator):
     """Test"""
     bl_idname = "mesh.plantilla_operador"
-    bl_label = "Test"
+    bl_label = "Plantilla operador"
     bl_options = {'REGISTER', 'UNDO'}
 
     count_x: IntProperty(
