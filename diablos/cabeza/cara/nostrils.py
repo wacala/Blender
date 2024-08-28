@@ -14,21 +14,8 @@ for path in paths:
     if path_dir not in sys.path:
         sys.path.insert(0, str(path_dir))
 
-# ruta_utils = "/Users/walter/Programación/Blender/blw/utils"
-# blend_dir = os.path.dirname(ruta_utils)
-# if blend_dir not in sys.path:
-#     sys.path.append(blend_dir)
-
-# ruta_utils = "/Users/walter/Programación/Blender/diablos"
-# blend_dir = os.path.dirname(ruta_utils)
-# if blend_dir not in sys.path:
-#     sys.path.append(blend_dir)
-
-
 
 importlib.reload(blw.utils)
-# importlib.reload(blw.types)
-# importlib.reload(diablos.props)
 
 
 class Nostrils(object):

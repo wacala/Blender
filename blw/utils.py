@@ -765,3 +765,20 @@ class Utils:
 
         # Switch back to OBJECT mode
         bpy.ops.object.mode_set(mode='OBJECT')
+
+    @staticmethod
+    def add_thickness(obj_name: str, thickness: float):
+        """Adds thickness to the object with name 'obj_name'.
+
+        Args:
+            obj_name (str): _description_
+            thickness (float): _description_
+        """
+        obj = bpy.data.objects[obj_name]
+        bpy.context.view_layer.objects.active = obj
+        obj.select_set(True)
+
+        solidify_modifier = obj.modifiers.new(name="Solidify", type='SOLIDIFY')
+        solidify_modifier.thickness = thickness
+
+        bpy.ops.object.modifier_apply(modifier=solidify_modifier.name)

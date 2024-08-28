@@ -62,7 +62,6 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
             curves_axis="Z",
             curves_offset=0.02)
         blw.utils.Utils.clean_geometry(septum_mesh.name)
-        # blw.utils.Utils.correct_mesh_normals(septum_mesh)
         return septum_mesh
 
     def septum_layout(self, context):
@@ -94,6 +93,8 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
 
     def creates_nostrils(self):
         self.nostrils = diablos.cabeza.cara.nostrils.Nostrils()
+        blw.utils.Utils.add_thickness(self.nostrils.left_nostril.name, .002)
+        blw.utils.Utils.add_thickness(self.nostrils.right_nostril.name, .002)
 
     def nostrils_layout(self, context):
         layout = self.layout

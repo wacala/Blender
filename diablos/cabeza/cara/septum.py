@@ -47,7 +47,7 @@ class Septum(object):
         self._septum_curves_data: List[Any] = []
         self._curve_data: List[Any] = []
         self._json_curves_data = blw.utils.Utils.read_json(
-            "/Users/walter/Programación/Blender/diablos/cabeza/cara/nariz/data.json")
+            "diablos/data/face.json")
         self._septum_curves_data = self._json_curves_data["septum_curves_data"]
         self._curve_data = ({"coordinates": [tuple(coord) for coord in curves_dictionary["coordinates"]],
                              "curve_name": curves_dictionary["curve_name"]} for
