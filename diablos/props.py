@@ -86,15 +86,6 @@ def register():
         bpy.utils.register_class(props_group)
         bpy.types.Object.general_properties = bpy.props.PointerProperty(
             type=props_group)
-    # for prop_group in prop_groups:
-    #      bpy.types.Scene.curve_properties_group = bpy.props.PointerProperty(
-    #     type=prop_group)
-    # bpy.types.Scene.curve_properties_group = bpy.props.PointerProperty(
-    #     type=CurvePropertiesGroup)
-    # bpy.types.Scene.septum_curves_properties = bpy.props.PointerProperty(
-    #     type=SeptumCurvesProperties)
-    # bpy.types.Object.general_properties = bpy.props.PointerProperty(
-    #     type=GeneralPropertiesGroup)
 
 
 def unregister():

@@ -53,7 +53,6 @@ class DiablosBase(abc.ABC, bpy.types.Operator, metaclass=MyMetaClass):
     def execute(self, context):
         pass
 
-    @abc.abstractmethod
     def draw(self, context):
         pass
 

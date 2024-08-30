@@ -3,7 +3,6 @@
 # Walter Rojas
 # Colección de métodos para operaciones diversas
 
-import blw.excepciones
 import os
 import sys
 import time
@@ -21,9 +20,8 @@ import mathutils
 from pprint import pprint
 from skspatial import objects
 from unidecode import unidecode
-
 import numpy
-import blw.types
+import pandas
 
 ruta_excepciones = "/Users/walter/Programación/Blender/blw/excepciones.py"
 
@@ -31,6 +29,8 @@ blend_dir = os.path.dirname(ruta_excepciones)
 if blend_dir not in sys.path:
     sys.path.append(blend_dir)
 
+import blw.types
+import blw.excepciones
 importlib.reload(blw.excepciones)
 
 
@@ -148,7 +148,7 @@ class Utils:
             punto: Lista de 3 elementos que representan la
             posición del punto en el espacio
             normal: Lista de 3 elementos que representan
-            lo componentes de la normal en el espacio*
+            lo componentes de la normal en el espacio
 
         Returns:
             nuevo_plano:
@@ -513,6 +513,19 @@ class Utils:
             json_data = f.read()
         data = orjson.loads(json_data)
         return data
+    
+    @staticmethod
+    def read_json_2(path_to_json: str, dict_key: str) -> dict:
+        with open(path_to_json, "rb") as f:
+            json_data = f.read()
+        data = orjson.loads(json_data)
+        return data[dict_key]
+    
+    @staticmethod
+    def get_coordinates(input_dict: dict) -> List[[float]]:
+        data_frame = pandas.DataFrame.from_dict(input_dict)
+        values = [elem for elem in data_frame.iloc[:, 1]]
+        return values
 
     @staticmethod
     def convert_list_to_tuple(input_list: List) -> tuple:

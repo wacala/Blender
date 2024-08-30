@@ -27,7 +27,7 @@ importlib.reload(diablos.props)
 
 class Septum(object):
     @property
-    def septum_curves_data(self):
+    def septum_curves_data(self) -> List[Any]:
         return self._septum_curves_data
 
     @septum_curves_data.setter
@@ -35,7 +35,7 @@ class Septum(object):
         self._septum_curves_data = value
 
     @property
-    def septum_curves(self):
+    def septum_curves(self) -> List[Any]:
         return self._septum_curves
 
     @septum_curves.setter
@@ -43,18 +43,19 @@ class Septum(object):
         self._septum_curves = value
 
     def __init__(self) -> None:
-        self._septum_curves: List[Any] = []
-        self._septum_curves_data: List[Any] = []
-        self._curve_data: List[Any] = []
-        self._json_curves_data = blw.utils.Utils.read_json(
-            "diablos/data/face.json")
-        self._septum_curves_data = self._json_curves_data["septum_curves_data"]
-        self._curve_data = ({"coordinates": [tuple(coord) for coord in curves_dictionary["coordinates"]],
-                             "curve_name": curves_dictionary["curve_name"]} for
-                            curves_dictionary in self._septum_curves_data)
-        self._septum_curves = [blw.utils.Utils.make_3d_curve(coordinates=elem["coordinates"],
-                                                             curve_name=elem["curve_name"],
-                                                             close=True) for elem in self._curve_data]
+        self.septum_curves = []
+        self.septum_curves_data= []
+        self.septum_coordinates = []
+        self.curve_data: List[Any] = []
+        self.json_curves_data = blw.utils.Utils.read_json_2("diablos/data/face.json", "septum_curves_data")
+        self.curve_data = ({"coordinates": [tuple(coord) for coord in curves_dictionary["coordinates"]],
+                            "curve_name": curves_dictionary["curve_name"]} for
+                            curves_dictionary in self.json_curves_data)
+        self.septum_coordinates = blw.utils.Utils.get_coordinates(self.json_curves_data)
+        print(f"self.septum_coordinates: {self.septum_coordinates}")
+        self.septum_curves = [blw.utils.Utils.make_3d_curve(coordinates=elem["coordinates"],
+                                                            curve_name=elem["curve_name"],
+                                                            close=True) for elem in self.curve_data]
 
 
 if __name__ == "__main__":

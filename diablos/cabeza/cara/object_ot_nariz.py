@@ -22,6 +22,7 @@ importlib.reload(blw)
 importlib.reload(blw.utils)
 importlib.reload(diablos)
 importlib.reload(diablos.props)
+importlib.reload(diablos.cabeza.cara.septum)
 
 bl_info = {
     "name": "Nariz paramétrica para ¡Diablos!",
@@ -115,6 +116,70 @@ class OBJECT_OT_nariz(diablos.diablos_base.DiablosBase):
         col.prop(self, "distancia_entre_fosas")
 
 
+class OBJECT_OT_septum_curves(diablos.diablos_base.DiablosBase):
+    bl_idname = "object_ot.septum_curves_coordinates"
+    bl_label = "Septum curves coordinates"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    # curves_coords = bpy.types.EnumProperty(
+    #     name="Coords",
+    #     description="The coordinates of the septum curves.",
+    #     items=lambda self,
+    #     context: self.reads_curves_data()
+    # )
+
+    def read_curves_data(self):
+        pass
+
+    def poll(cls, context):
+        return bpy.context.area.type == 'VIEW_3D'
+    
+    def execute(self, context):
+        my_props = context.scene.props
+        self.septum_curves_coords = blw.utils.Utils.read_json("diablos/data/face.json")
+        print(f"self.septum.curve_data: {self.septum.curve_data}")
+        return {'FINISHED'}
+    
+    def invoke(self, context, event):
+        return self.execute(context)
+    
+    def curves_data(self):
+        # septum = diablos.cabeza.cara.septum.Septum()
+        # septum_mesh = blw.utils.Utils.mesh_from_curves(
+        #     input_curves=septum.septum_curves,
+        #     curves_axis="Z",
+        #     curves_offset=0.02)
+        # blw.utils.Utils.clean_geometry(septum_mesh.name)
+        pass
+
+    def septum_layout(self, context):
+        layout = self.layout
+        col = layout.column()
+        col.prop(self, "test_int")
+
+        self.septum_curves_properties = context.scene.septum_curves_properties
+        prop_objects = [self.septum_curves_properties.raiz,
+                        self.septum_curves_properties.puente,
+                        self.septum_curves_properties.dorso,
+                        self.septum_curves_properties.suprapunta,
+                        self.septum_curves_properties.punta,
+                        self.septum_curves_properties.surco
+                        ]
+        septum_curves_titles = ["Raíz", "Puente",
+                                "Dorso", "Suprapunta", "Punta", "Surco"]
+        objects_and_curves_titles = blw.utils.Utils.convert_zip_in_list(
+            zip(prop_objects, septum_curves_titles))
+        layout = self.layout
+        layout.label(text="Curvas septum")
+        for object_and_curve_title in objects_and_curves_titles:
+            layout.label(text=object_and_curve_title[1])
+            row = layout.row()
+            col_width = row.column()
+            col_length = row.column()
+            col_width.prop(object_and_curve_title[0], "curve_width")
+            col_length.prop(object_and_curve_title[0], "curve_length")
+
+
 # Define a Panel to display the properties
 class PANEL_PT_nariz(bpy.types.Panel):
     bl_label = "Panel Nariz Diablos"
@@ -125,7 +190,8 @@ class PANEL_PT_nariz(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        layout.operator("object_ot.nariz", text="Run Nariz")
+        layout.operator("object_ot.nariz", text="Septum")
+        # layout.operator("object_ot.septum_curves_coordinates", text="Septum curve coordinates")
 
 
 classes = [OBJECT_OT_nariz,

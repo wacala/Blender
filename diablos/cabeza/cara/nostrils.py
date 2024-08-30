@@ -36,31 +36,5 @@ class Nostrils(object):
             )
 
 
-class Nostril:
-    @property
-    def nostril_width(self):
-        return self.nostril_width
-
-    @nostril_width.setter
-    def nostril_width(self, value):
-        self.nostril_width = value
-
-    @property
-    def nostril_height(self):
-        return self.nostril_height
-
-    @nostril_height.setter
-    def nostril_height(self, value):
-        self.nostril_height = value
-
-    @property
-    def nostril_length(self):
-        return self.nostril_length
-
-    @nostril_length.setter
-    def nostril_length(self, value):
-        self.nostril_length = value
-
-
 if __name__ == "__main__":
     t = Nostrils()
